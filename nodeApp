@@ -1,0 +1,91 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:             nodeApp
+# Required-Start:       $syslog $remote_fs
+# Required-Stop:        $syslog $remote_fs
+# Should-Start:         $local_fs
+# Should-Stop:          $local_fs
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    nodeApp
+# Description:          node app service
+### END INIT INFO
+
+### BEGIN CHKCONFIG INFO
+# chkconfig: 2345 55 25
+# description: nodeApp
+### END CHKCONFIG INFO
+
+NAME="nodeApp"
+NODE_BIN_DIR="/usr/local/node/bin"
+NODE_PATH="/usr/local/lib/node_modules"
+APPLICATION_PATH="/home/pi/node/app.js"
+PIDFILE="/var/run/nodeApp.pid"
+LOGFILE="/var/log/nodeApp.log"
+MIN_UPTIME="5000"
+SPIN_SLEEP_TIME="2000"
+
+PATH=$NODE_BIN_DIR:$PATH
+
+export NODE_PATH=$NODE_PATH
+
+start() {
+    echo "Starting $NAME"
+    forever \
+    --pidFile $PIDFILE \
+    -a \
+    -l $LOGFILE \
+    --minUptime $MIN_UPTIME \
+    --spinSleepTime $SPIN_SLEEP_TIME \
+    start $APPLICATION_PATH 2>&1 > /dev/null &
+    RETVAL=$?
+}
+
+stop() {
+    if [ -f $PIDFILE ]; then
+        echo "Shutting down $NAME"
+        forever stop $APPLICATION_PATH 2>&1 > /dev/null
+        rm -f $PIDFILE
+        RETVAL=$?
+    else
+        echo "$NAME is not running."
+        RETVAL=0
+    fi
+}
+
+restart() {
+    stop
+    start
+}
+
+status() {
+    echo `forever list` | grep -q "$APPLICATION_PATH"
+    if [ "$?" -eq "0" ]; then
+        echo "$NAME is running."
+        RETVAL=0
+    else
+        echo "$NAME is not running."
+        RETVAL=3
+    fi
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+        ;;
+    restart)
+        restart
+        ;;
+    *)
+        echo "Usage: {start|stop|status|restart}"
+        exit 1
+        ;;
+esac
+exit $RETVAL
