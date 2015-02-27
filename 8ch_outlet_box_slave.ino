@@ -7,7 +7,7 @@
 int data = 9; // Data to be writen back to I2c master. 9 = no data ready yet.
 
 void setup(){
-  for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS; i++){ // Loop through all outlets
+  for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){ // Loop through all outlets
     pinMode(i, OUTPUT);
     digitalWrite(i, HIGH); // Initialize them all at HIGH (off)
   }
@@ -94,7 +94,7 @@ void handleInput(char command[2]){
 
 void turnOn(int outletNum){
   if(outletNum == 666){
-    for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS; i++){
+    for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){
       if(digitalRead(i)){
         digitalWrite(i, LOW);
         Serial.print("Turned ON outlet #");
@@ -110,7 +110,7 @@ void turnOn(int outletNum){
 
 void turnOff(int outletNum){
   if(outletNum == 666){
-    for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS; i++){
+    for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){
       if(!digitalRead(i)){
         digitalWrite(i, HIGH);
         Serial.print("Turned OFF outlet #");
