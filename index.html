@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+	<head>
+		<meta charset="utf-8">
+		<title>Medeina</title>
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<meta http-equiv="cleartype" content="on">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!--[if lt IE 9]>
+			<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<script>
+			var ReqX=function(e){if(!(this instanceof ReqX))return new ReqX(e);this.version=1.2+" (Beta)";var t=this;var n=0;var r=[];var i=[];if(!e)e={};var s=function(){n++};var o=function(e){n--;if(e){if(!r)r=[];r.push(e);if(t.error_callback)t.error_callback(e)}if(n==0){if(i.length>0)u();i.splice(0,1);if(t.callback&&i.length<1&&n<1){if(!r||r.length<1)r=null;t.callback(r);t.callback=null}}};var u=function(){if(i.length<1)return;var e=i[0];t.ajax(e.url,e.method,e.data,e.callback)};this.done=function(e){if(typeof e!=="function")return console.warn("ReqX.done() only accepts functions");t.callback=e;return this};this.error=function(e){if(typeof e!=="function")return console.warn("ReqX.errors() only accepts functions");t.error_callback=e;return this};this.ajax=function(r,u,a,f){var l=function(){if(e.sync&&n>0){i.unshift({url:r,method:u,data:a,callback:f});return}t.ajax(r,u,a,f)};if(e.sync&&n>0){var c={url:r,method:u,data:a,callback:f};i.push(c);return this}if(typeof u=="function"){f=u;a=u=undefined}if(typeof a=="function"){f=a;a=undefined}s();$.ajax({url:r,cache:e.cache||true,type:u||e.default_method||"GET",data:a||{},dataType:e.dataType}).done(function(e){if(f)f(null,e,l);o()}).error(function(e,t,n){if(f)f(e);o(e)});return this};this.get=function(e,t,n){if(!t){n=t;t=undefined}this.ajax(e,"GET",t,n);return this};this.post=function(e,t,n){if(!t){n=t;t=undefined}this.ajax(e,"POST",t,n);return this};return this}
+			var medeina = function(){};
+			(function(){
+				var _self = this;
+				this.turnOnOutlet = function(){
+					ReqX().get("/turnOnOutlet", function(err, res){
+						if(err) return console.log(err.responseText);
+						console.log(res);
+					});
+				}
+				this.turnOffOutlet = function(){
+					ReqX().get("/turnOffOutlet", function(err, res){
+						if(err) return console.log(err.responseText);
+						console.log(res);
+					});
+				}
+				this.init = function(){
+					$("#turnOn").click(function{
+						_self.turnOnOutlet();
+					});
+					$("#turnOff").click(function{
+						_self.turnOffOutlet();
+					});
+				}
+			}).call(medeina);
+			$(function() {
+			    medeina.init();
+			});
+		</script>
+	</head>
+
+	<body>
+		<input type="text" id="outletInput">
+		<button id="turnOn">Turn On</button>
+		<button id="turnOff">Turn Off</button>
+	</body>
+</html>
