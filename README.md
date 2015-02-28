@@ -9,7 +9,7 @@ This file is ment to be run on an arduino nano(328). It is a 8 chanel powerstrip
 This file is intended to serve as a small all-in-one standalone system for testing sensors and gathering data.
 
 ### nodeApp
-Prerequisites: node.js(see below), "Forever" node package: `sudo npm install -g forever`
+Prerequisites: node.js(see below), "Forever" node package: `sudo npm install -g forever`<br>
 This is a script to take care of starting and stopping my node application running in the background via forever. It is intended to be placed inside the `/etc/init.d/` folder and added to the boot operations with `update-rc.d`
 
 ## Reference!
