@@ -1,8 +1,8 @@
 #include <Wire.h>
 
-#define SLAVE_ADDRESS 2 // Slave address used for I2c
+#define SLAVE_ADDRESS 4 // Slave address used for I2c
 #define NUM_OUTLETS 8 // Total number of outlets
-#define FIRST_OUTLET_PIN 2 // The first(lowest number) pin of NUM_OUTLETS, this is designed to be used with consecutive pins eg. 2-9
+#define FIRST_OUTLET_PIN 2 // The first(lowest number) pin of NUM_OUTLETS, designed to be used with consecutive pins eg. 2-9
 
 int data = 9; // Data to be writen back to I2c master. 9 = no data ready yet.
 
@@ -19,11 +19,11 @@ void setup(){
   
   Serial.println("            Serial/I2c Powerstrip            ");
   Serial.println("=============================================");
-  Serial.println("To operate enter 2 digits [outletNum][action]");
+  Serial.println("To operate enter 2 digits [action][outletNum]");
+  Serial.println("Available actions are: 1(ON), 0(OFF), r(read)");
   Serial.print("There are ");
   Serial.print(NUM_OUTLETS);
   Serial.println(" currently configured outlets");
-  Serial.println("Available actions are: 1(ON), 0(OFF), r(read)");
   Serial.println("=============================================");
 }
 
@@ -61,10 +61,10 @@ void receiveEvent(int howMany){
 
 void handleInput(char command[2]){
   int outletNum;
-  if(command[0] == 'a'){
+  if(command[1] == 'a'){
     outletNum = 666;
   }else{
-    outletNum = (int)command[0] - '0'; // Convert char to int
+    outletNum = (int)command[1] - '0'; // Convert char to int
     if(outletNum > NUM_OUTLETS || outletNum < 1){
       Serial.print(command[0]);
       Serial.print(" is not a valid outlet selection, 1-");
@@ -75,7 +75,7 @@ void handleInput(char command[2]){
       outletNum = outletNum + (FIRST_OUTLET_PIN - 1); // Adjust based on what the first pin is
     }
   }
-  switch(command[1]){
+  switch(command[0]){
     case '0':
       turnOff(outletNum);
       break;
@@ -86,7 +86,7 @@ void handleInput(char command[2]){
       readOutlet(outletNum);
       break;
     default:
-      Serial.print(command[1]);
+      Serial.print(command[0]);
       Serial.println(" is not a valid outlet action. 0, 1, r are the avalible actions");
       break;
   }
