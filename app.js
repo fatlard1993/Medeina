@@ -1,26 +1,46 @@
-var fs = require('fs'), express = require('express'), i2c = require('i2c-bus'), spawn = require('child_process').spawn;
+var fs = require('fs'), express = require('express'), i2c = require('i2c-bus'), bodyParser = require('body-parser'), spawn = require('child_process').spawn;
 var app = express();
-var oneDay = 86400000;
 
+var oneDay = 86400000;
 var ON = 49, OFF = 48;
+
 var outletNum = new Buffer("1");
 
-app.get("/images", function(req, res, next){
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true })); 
+
+app.get("/getConfig", function(req, res, next){
+	fs.readFile("./config.json", function(err, file){
+		if(err) return next(err);
+		res.send(file);
+	});
+}).post("/saveConfig", function(req, res, next){
+	var data = req.body;
+	fs.writeFile('./config.js', "module.exports = "+data, function (err) {
+	    if (err) {
+			console.log('There has been an error saving your configuration data.');
+			console.log(err.message);
+			return;
+	    }
+	    console.log(req.body);
+	    console.log('Configuration saved successfully.');
+	});
+}).get("/images", function(req, res, next){
 	fs.readdir('/home/pi/node/public/images/', function(err, files){
 		if(err) return next(err);
 		files.sort(function(a,b){return b.replace(/\D/g, '') - a.replace(/\D/g, '')});
 		res.send(JSON.stringify(files));
 	});
-}).get("/turnOnOutlet", function(req, res, next){
+}).post("/turnOnOutlet", function(req, res, next){
+	var outletNum = req.body.outletNum;
 	var i2c1 = i2c.openSync(1);
 	i2c1.writeI2cBlockSync(0x04, ON, 1, outletNum);
 	i2c1.closeSync();
-	res.send("done!");
-}).get("/turnOffOutlet", function(req, res, next){
+}).post("/turnOffOutlet", function(req, res, next){
+	var outletNum = req.body.outletNum;
 	var i2c1 = i2c.openSync(1);
 	i2c1.writeI2cBlockSync(0x04, OFF, 1, outletNum);
 	i2c1.closeSync();
-	res.send("done!");
 }).get("/test", function(req, res, next){
 	res.send("TEST!");
 });
