@@ -30,10 +30,13 @@ app.get("/getConfig", function(req, res, next){
 		res.send(JSON.stringify(files));
 	});
 }).post("/turnOnOutlet", function(req, res, next){
+	var test;
 	var outletNum = new Buffer(req.body.outletNum);
 	var i2c1 = i2c.openSync(1);
 	i2c1.writeI2cBlockSync(0x04, ON, 1, outletNum);
+	test = i2c1.readByteSync(0x04, 1);
 	i2c1.closeSync();
+	console.log(test);
 	res.send("TEST");
 }).post("/turnOffOutlet", function(req, res, next){
 	var outletNum = new Buffer(req.body.outletNum);
