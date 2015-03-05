@@ -16,24 +16,27 @@
 			var medeina = function(){};
 			(function(){
 				var _self = this;
-				this.turnOnOutlet = function(){
-					ReqX().post("/turnOnOutlet", { outletNum: 1 }, function(err, res){
+				this.turnOnOutlet = function(num){
+					ReqX().post("/turnOnOutlet", { outletNum: num }, function(err, res){
 						if(err) return console.log(err.responseText);
+						console.log("RESULT!");
 						console.log(res);
 					});
 				}
-				this.turnOffOutlet = function(){
-					ReqX().post("/turnOffOutlet", { outletNum: 1 }, function(err, res){
+				this.turnOffOutlet = function(num){
+					ReqX().post("/turnOffOutlet", { outletNum: num }, function(err, res){
 						if(err) return console.log(err.responseText);
 						console.log(res);
 					});
 				}
 				this.init = function(){
-					$("#turnOn").click(function{
-						_self.turnOnOutlet();
+					$("#turnOn").click(function(){
+						_self.turnOnOutlet($("#outletInput").val());
+						$("#outletInput").val("");
 					});
-					$("#turnOff").click(function{
-						_self.turnOffOutlet();
+					$("#turnOff").click(function(){
+						_self.turnOffOutlet($("#outletInput").val());
+						$("#outletInput").val("");
 					});
 				}
 			}).call(medeina);
