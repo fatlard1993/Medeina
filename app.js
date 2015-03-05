@@ -4,8 +4,6 @@ var app = express();
 var oneDay = 86400000;
 var ON = 49, OFF = 48;
 
-var outletNum = new Buffer("1");
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
 
@@ -32,12 +30,13 @@ app.get("/getConfig", function(req, res, next){
 		res.send(JSON.stringify(files));
 	});
 }).post("/turnOnOutlet", function(req, res, next){
-	var outletNum = req.body.outletNum;
+	var outletNum = new Buffer(req.body.outletNum);
 	var i2c1 = i2c.openSync(1);
 	i2c1.writeI2cBlockSync(0x04, ON, 1, outletNum);
 	i2c1.closeSync();
+	res.send("TEST");
 }).post("/turnOffOutlet", function(req, res, next){
-	var outletNum = req.body.outletNum;
+	var outletNum = new Buffer(req.body.outletNum);
 	var i2c1 = i2c.openSync(1);
 	i2c1.writeI2cBlockSync(0x04, OFF, 1, outletNum);
 	i2c1.closeSync();
