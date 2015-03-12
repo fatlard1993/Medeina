@@ -4,15 +4,18 @@ var app = express();
 var oneDay = 86400000;
 var ON = 49, OFF = 48;
 
+var i2c = require('i2c');
+
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
 
-app.get("/getConfig", function(req, res, next){
-	fs.readFile("./config.json", function(err, file){
+app.get("/getConfig", function (req, res, next){
+	fs.readFile("./config.json", function (err, file){
 		if(err) return next(err);
 		res.send(file);
 	});
-}).post("/saveConfig", function(req, res, next){
+}).post("/saveConfig", function (req, res, next){
 	var data = req.body;
 	fs.writeFile('./config.js', "module.exports = "+data, function (err) {
 	    if (err) {
@@ -23,13 +26,19 @@ app.get("/getConfig", function(req, res, next){
 	    console.log(req.body);
 	    console.log('Configuration saved successfully.');
 	});
-}).get("/images", function(req, res, next){
-	fs.readdir('/home/pi/node/public/images/', function(err, files){
+}).get("/images", function (req, res, next){
+	fs.readdir('/home/pi/node/public/images/', function (err, files){
 		if(err) return next(err);
-		files.sort(function(a,b){return b.replace(/\D/g, '') - a.replace(/\D/g, '')});
+		files.sort(function (a,b){return b.replace(/\D/g, '') - a.replace(/\D/g, '')});
 		res.send(JSON.stringify(files));
 	});
-}).post("/turnOnOutlet", function(req, res, next){
+}).post("/outlet", function (req, res, next){
+	var address = 0x04;
+	var wire = new i2c(address, {device: '/dev/i2c-1'});
+	var action = req.body.Action;
+	var outletNum = req.body.OutletNum.charCodeAt();
+	wire.write([action, outletNum], function(err) {});
+}).post("/turnOnOutlet", function (req, res, next){
 	var test;
 	var outletNum = new Buffer(req.body.outletNum);
 	var i2c1 = i2c.openSync(1);
@@ -38,7 +47,7 @@ app.get("/getConfig", function(req, res, next){
 	i2c1.closeSync();
 	console.log(test);
 	res.send("TEST");
-}).post("/turnOffOutlet", function(req, res, next){
+}).post("/turnOffOutlet", function (req, res, next){
 	var outletNum = new Buffer(req.body.outletNum);
 	var i2c1 = i2c.openSync(1);
 	i2c1.writeI2cBlockSync(0x04, OFF, 1, outletNum);
