@@ -17,14 +17,14 @@
 			(function(){
 				var _self = this;
 				this.turnOnOutlet = function(num){
-					ReqX().post("/turnOnOutlet", { outletNum: num }, function(err, res){
+					ReqX().post("/outlet", { OutletNum: num, Action: 49 }, function(err, res){
 						if(err) return console.log(err.responseText);
 						console.log("RESULT!");
 						console.log(res);
 					});
 				}
 				this.turnOffOutlet = function(num){
-					ReqX().post("/turnOffOutlet", { outletNum: num }, function(err, res){
+					ReqX().post("/outlet", { OutletNum: num, Action: 48 }, function(err, res){
 						if(err) return console.log(err.responseText);
 						console.log(res);
 					});
