@@ -47,6 +47,7 @@ void serialEvent() {
 
 void requestEvent(){
   Wire.write(data);
+  data = 9;
 }
 
 void receiveEvent(int howMany){
@@ -66,7 +67,8 @@ void handleInput(char command[2]){
   }else{
     outletNum = (int)command[1] - '0'; // Convert char to int
     if(outletNum > NUM_OUTLETS || outletNum < 1){
-      Serial.print(command[0]);
+      data = 2; // 2 = unusable outlet num (obvously)
+      Serial.print(outletNum);
       Serial.print(" is not a valid outlet selection, 1-");
       Serial.print(NUM_OUTLETS);
       Serial.println(" are currently configured.");
@@ -86,6 +88,7 @@ void handleInput(char command[2]){
       readOutlet(outletNum);
       break;
     default:
+      data = 3; // 3 = invalid action (This may never be used, might remove it later)
       Serial.print(command[0]);
       Serial.println(" is not a valid outlet action. 0, 1, r are the avalible actions");
       break;
@@ -93,6 +96,7 @@ void handleInput(char command[2]){
 }
 
 void turnOn(int outletNum){
+  data = 1;
   if(outletNum == 666){
     for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){
       if(digitalRead(i)){
@@ -109,6 +113,7 @@ void turnOn(int outletNum){
 }
 
 void turnOff(int outletNum){
+  data = 1;
   if(outletNum == 666){
     for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){
       if(!digitalRead(i)){
@@ -143,8 +148,10 @@ void readOutlet(int outletNum){
     Serial.print(outletNum - (FIRST_OUTLET_PIN - 1));
     Serial.print(" is ");
     if(outletState){
+      data = 0;
       Serial.println("OFF!");
     } else{
+      data = 1;
       Serial.println("ON!");
     }
   }
