@@ -14,7 +14,7 @@ This is a script to take care of starting and stopping my node application runni
 
 ## Reference!
 #### Setting up i2c on Raspberry pi
-1. `sudo nano /etc/modprobe.d/raspi-blacklist.conf` and comment out(Place a '#' before the line) the line blacklisting i2c-bcm2708
+1. `sudo nano /etc/modprobe.d/raspi-blacklist.conf` and comment out(Place a '#' before the line) the line blacklisting i2c-bcm2708 (If it exsists)
 1. `sudo nano /etc/modules` and add `i2c-dev` and `i2c-bcm2708` to the end of the file
 1. Add i2c tools: `sudo apt-get install i2c-tools`
 1. Add the pi user to the i2c group: `sudo adduser pi i2c`
