@@ -1,11 +1,8 @@
-var fs = require('fs'), express = require('express'), i2c = require('i2c-bus'), bodyParser = require('body-parser'), spawn = require('child_process').spawn;
+var fs = require('fs'), express = require('express'), i2c = require('i2c'), bodyParser = require('body-parser'), spawn = require('child_process').spawn;
 var app = express();
 
 var oneDay = 86400000;
-var ON = 49, OFF = 48;
-
-var i2c = require('i2c');
-
+var outletSlaveAddress = 0x04;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
@@ -33,25 +30,20 @@ app.get("/getConfig", function (req, res, next){
 		res.send(JSON.stringify(files));
 	});
 }).post("/outlet", function (req, res, next){
-	var address = 0x04;
-	var wire = new i2c(address, {device: '/dev/i2c-1'});
-	var action = req.body.Action;
 	var outletNum = req.body.OutletNum.charCodeAt();
-	wire.write([action, outletNum], function(err) {});
-}).post("/turnOnOutlet", function (req, res, next){
-	var test;
-	var outletNum = new Buffer(req.body.outletNum);
-	var i2c1 = i2c.openSync(1);
-	i2c1.writeI2cBlockSync(0x04, ON, 1, outletNum);
-	test = i2c1.readByteSync(0x04, 1);
-	i2c1.closeSync();
-	console.log(test);
-	res.send("TEST");
-}).post("/turnOffOutlet", function (req, res, next){
-	var outletNum = new Buffer(req.body.outletNum);
-	var i2c1 = i2c.openSync(1);
-	i2c1.writeI2cBlockSync(0x04, OFF, 1, outletNum);
-	i2c1.closeSync();
+	var action = req.body.Action.charCodeAt();
+	var wire = new i2c(outletSlaveAddress, { device: '/dev/i2c-1' });
+	
+	wire.write([action, outletNum], function(err) {
+		if(err) return next(err);
+		setTimeout(function() {
+			wire.read(1, function (err, result) {
+				if(err) return next(err);
+				console.log(result);
+				res.send(result.toString());
+			});
+		}, 200);
+	});
 }).get("/test", function(req, res, next){
 	res.send("TEST!");
 });
