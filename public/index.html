@@ -16,27 +16,45 @@
 			var medeina = function(){};
 			(function(){
 				var _self = this;
-				this.turnOnOutlet = function(num){
-					ReqX().post("/outlet", { OutletNum: num, Action: 49 }, function(err, res){
+				this.outlet = function(num, action){
+					ReqX().post("/outlet", { OutletNum: num, Action: action }, function(err, res){
 						if(err) return console.log(err.responseText);
-						console.log("RESULT!");
-						console.log(res);
-					});
-				}
-				this.turnOffOutlet = function(num){
-					ReqX().post("/outlet", { OutletNum: num, Action: 48 }, function(err, res){
-						if(err) return console.log(err.responseText);
-						console.log(res);
+						if(action == 1 || action == 0){
+							if(res == 1){
+								alert("Success!");
+							} else{
+								alert("Failed! Reason: "+res);
+							}
+						} else{
+							if(res == 1){
+								alert("Outlet "+num+" is ON!");
+							} else{
+								alert("Outlet "+num+" is OFF!");
+							}
+						}
 					});
 				}
 				this.init = function(){
+					$(".action").prop("disabled", true);
 					$("#turnOn").click(function(){
-						_self.turnOnOutlet($("#outletInput").val());
-						$("#outletInput").val("");
+						_self.outlet($("#outletInput").val(), "1");
 					});
 					$("#turnOff").click(function(){
-						_self.turnOffOutlet($("#outletInput").val());
+						_self.outlet($("#outletInput").val(), "0");
+					});
+					$("#readState").click(function(){
+						_self.outlet($("#outletInput").val(), "r");
+					});
+					$(".action").click(function(){
 						$("#outletInput").val("");
+						$(".action").prop("disabled", true);
+					});
+					$("#outletInput").keyup(function(){
+						if($(this).val() != ""){
+							$(".action").prop("disabled", false);
+						} else{
+							$(".action").prop("disabled", true);
+						}
 					});
 				}
 			}).call(medeina);
@@ -48,7 +66,8 @@
 
 	<body>
 		<input type="text" id="outletInput">
-		<button id="turnOn">Turn On</button>
-		<button id="turnOff">Turn Off</button>
+		<button id="turnOn" class="action">Turn On</button>
+		<button id="turnOff" class="action">Turn Off</button>
+		<button id="readState" class="action">Read State</button>
 	</body>
 </html>
