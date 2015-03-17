@@ -1,0 +1,14 @@
+Mock setup process:
+1) Make all physical connections
+  a) Place sensors in apropriate places in your grow room
+  b) Connect sensors to sensor hubs
+  c) Connect sensor hubs to brain
+  d) Connect power moduel(s) to brain
+  e) Connect camera module(s) to brain
+  f) Connect ethernet, or wireless module to brain
+  g) Connect power to the brain and power module(s)
+2) Set up the brain
+  a) Using a web browser log into your brain //This will bring you to a set up wizard to set up the connected modules
+  b) Go through the set up wizard and configure all of the modules that pertain to your system //Next will be sensors
+  c) Go through the wizard(s) (depending on how many sensor hubs you have configured) to configure your connected sensors/alerts
+  
