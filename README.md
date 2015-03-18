@@ -1,8 +1,22 @@
 # Medeina
-All the codes for my gardening project
+Medeina is an automated envrioment control(AEC) system. That means if you have an enviroment to control, a reptile/amphibian cage/terrarium or a grow room/tent, then Medeina is for you! Medeina can be connected to a seemingly endless number of sensors like: `temp`, `temp_humidity`, `soilMoisture`, `lightIntensity`, `reservoirLevel`, `C02`, `pH`, `flood`, `PIR`, `door`, and even other varous `HID` like a button or fader. In addition to these sensors there are power and camera modules that can be configured. Every input device can trigger an alert such as an email, sms, or even directly interact with other modules, all user configurable! Medeina will walk you through a qick and easy setup process that will create a module for each of the "hard" devices, once you've got everything configured you can set up "soft" modules such as: `light`, `fan`, `humidifier_dehumidifier`, `exhaust`, `nutrient_ph` and `heating_cooling`. From there all youve got to do is input the specific requirements and schedules for your enviroment and its done!
 
+## Setup! *mock up
+1. Make all physical connections
+  1. Place sensors in apropriate places in your grow room
+  1. Connect sensors to sensor hubs
+  1. Connect sensor hubs to brain
+  1. Connect power moduel(s) to brain
+  1. Connect camera module(s) to brain
+  1. Connect ethernet, or wireless module to brain
+  1. Connect power to the brain and power module(s)
+1. Set up the brain
+  1. Using a web browser log into your brain //This will bring you to a set up wizard to set up the connected modules
+  1. Go through the set up wizard and configure all of the modules that pertain to your system //Next will be sensors
+  1. Go through the wizard(s) (depending on how many sensor hubs you have configured) to configure your connected sensors/alerts
+  
 ## Files!
-### 8ch_outlet_box_slave.ino
+### power_8ch.ino
 This file is ment to be run on an arduino nano(328). It is a 8 chanel powerstrip, each of the 8 outlets are individually controlable via i2c and Serial(for testing only).
 
 ### garduino.ino
