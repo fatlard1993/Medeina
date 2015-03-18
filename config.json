@@ -1,0 +1,67 @@
+{
+	"name": "TestBed - #1",
+	"modules": [
+		{
+			"name": "SensorHub-1",
+			"type": "sensor",
+			"address": "0x04",
+			"sensors": [
+				{
+					"type": "tempreture",
+					"update": 600000,
+					"alert": [
+						{
+							"type": "sms",
+							"desination": "425-870-9881",
+							"min": { "value": 55, "alert": "Temp is low!" },
+							"error": { "alert": "Faled to get temp!" }
+						}
+					]
+				},
+				{
+					"type": "soilMoisture",
+					"update": 600000,
+					"alert": [
+						{
+							"type": "sms",
+							"desination": "",
+							"min": { "value": 100, "alert": "Needs water!" },
+							"error": { "alert": "Faled to get soil moisture!" }
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Camera-1",
+			"type": "camera",
+			"address": "/dev/video_0",
+			"component": {
+				"update": 600000,
+				"alert": [
+					{
+						"type": "sms",
+						"desination": "",
+						"error": { "alert": "Faled to get image!" }
+					}
+				]
+			}
+		},
+		{
+			"name": "Power-1",
+			"type": "power",
+			"address": "0x05",
+			"component": {
+				"outlets": 8,
+				"alert": [
+					{
+						"type": "sms",
+						"desination": "",
+						"error": { "alert": "Faled to set power!" },
+
+					}
+				]
+			}
+		}
+	]
+}
