@@ -1,11 +1,39 @@
-var fs = require('fs'), express = require('express'), i2c = require('i2c'), bodyParser = require('body-parser'), spawn = require('child_process').spawn;
+var fs = require('fs'), express = require('express'), i2c = require('i2c'), bodyParser = require('body-parser'), spawn = require('child_process').spawn, config = require('/config.json');
 var app = express();
 
 var oneDay = 86400000;
 var outletSlaveAddress = 0x04;
 
+var Camelittle = require('camelittle');
+var clInstance = new Camelittle({
+    device: '/dev/video0',
+    resolution: '1920x1080',
+    frames: 5,
+    'no-banner': null
+});
+clInstance.grab(function(err, image){
+    fs.writeFileSync('callback.jpg', val, 'binary');
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
+
+var init = function(config){
+	config.modules.forEach(function(module){
+		init[module.type](module.name, module.address, module.sensors || module.component);
+	});
+}
+init.sensor = function(name, address, sensors){
+	sensors.forEach(function(sensor){
+		
+	});
+}
+init.camera = function(name, address, component){
+
+}
+init.power = function(name, adress, component){
+
+}
 
 app.get("/getConfig", function (req, res, next){
 	fs.readFile("./config.json", function (err, file){
