@@ -1,0 +1,36 @@
+- ability to change i2c address of any slave device through web interface (to avoid conflicts) - STRECH - automatically do this?
+- ability to create a module for specific outlet(s) eg. light cycle module, fan cycle - See soft modules below
+- ability to use sensor alerts to trigger outlets
+- day vs. night settings
+
+- Hard module types:
+  - power
+    - 2ch_12v
+    - 4ch
+    - 8ch
+    - 16ch
+  - camera
+  - sensorHub
+    - X size (small)
+    - X size (large)
+
+- Soft module types:
+  - light
+  - fan
+  - exhaust
+  - humidifier_dehumidifier
+  - heating_cooling //Can be used for room or reservour, ect
+  - nutrient_ph
+
+- Sensor types:
+  - soilMoisture
+  - temp_humidity
+  - temp //Can be used for reservour, soil, ect.
+  - lightIntensity
+  - reservoirLevel
+  - C02
+  - pH
+  - flood
+  - PIR
+  - door
+  - HID //Could be a button, potentiometer, ect.
