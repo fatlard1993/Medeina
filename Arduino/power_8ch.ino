@@ -5,6 +5,7 @@
 #define FIRST_OUTLET_PIN 2 // The first(lowest number) pin of NUM_OUTLETS, designed to be used with consecutive pins eg. 2-9
 
 int data = 9; // Data to be writen back to I2c master. 9 = no data ready yet.
+bool DATA[8];
 
 void setup(){
   for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){ // Loop through all outlets
@@ -46,7 +47,11 @@ void serialEvent() {
 }
 
 void requestEvent(){
-  Wire.write(data);
+  if(data == 666){
+    Wire.write((uint8_t *)DATA, sizeof(DATA));
+  } else{
+    Wire.write(data);
+  }
   data = 9;
 }
 
@@ -131,14 +136,17 @@ void turnOff(int outletNum){
 
 void readOutlet(int outletNum){
   if(outletNum == 666){
-    for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS; i++){
+    data = 666;
+    for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){
       bool outletState = digitalRead(i);
       Serial.print("Outlet #");
       Serial.print(i - (FIRST_OUTLET_PIN - 1));
       Serial.print(" is ");
       if(outletState){
+        DATA[i - FIRST_OUTLET_PIN] = 0;
         Serial.println("OFF!");
       } else{
+        DATA[i - FIRST_OUTLET_PIN] = 1;
         Serial.println("ON!");
       }
     }
