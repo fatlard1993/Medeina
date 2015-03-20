@@ -24,8 +24,6 @@ void setup(void){
   Wire.begin(SLAVE_ADDRESS);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
-
-  Serial.begin(9600);
 }
 
 void loop(void){} //Because Arduino complains if its missing
