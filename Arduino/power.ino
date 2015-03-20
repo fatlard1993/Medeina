@@ -16,7 +16,7 @@
 int data = NO_DATA; // Data to be writen back to I2c master
 bool outletState[NUM_OUTLETS];
 
-void setup(){
+void setup(void){
   for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){
     pinMode(i, OUTPUT);
     digitalWrite(i, HIGH); // Initialize all outlets to HIGH (off)
@@ -24,9 +24,11 @@ void setup(){
   Wire.begin(SLAVE_ADDRESS);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
+
+  Serial.begin(9600);
 }
 
-void loop(){} //Because Arduino complains if its missing
+void loop(void){} //Because Arduino complains if its missing
 
 void receiveEvent(int howMany){
   int receiveByte = 0;
@@ -49,7 +51,7 @@ void receiveEvent(int howMany){
   outlet(outletNum, command[0]);
 }
 
-void requestEvent(){
+void requestEvent(void){
   if(data == ALL){
     Wire.write((uint8_t *)outletState, NUM_OUTLETS);
   } else {
@@ -65,7 +67,8 @@ void outlet(int num, char action){
         outletState[i - FIRST_OUTLET_PIN] = digitalRead(i);
         data = ALL;
       } else {
-        digitalWrite(i, ((int)action - '0'));
+        int iaction = (int)action - '0'; // Convert char to int
+        digitalWrite(i, iaction);
         data = SUCCESS;
       }
     }
@@ -73,7 +76,8 @@ void outlet(int num, char action){
     if(action == 'r'){
         data = digitalRead(num);
     } else {
-      digitalWrite(num, ((int)action - '0'));
+      int iaction = (int)action - '0'; // Convert char to int
+      digitalWrite(num, iaction);
       data = SUCCESS;
     }
   }
