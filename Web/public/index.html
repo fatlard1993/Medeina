@@ -13,17 +13,9 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 		<script>
 			var ReqX=function(e){if(!(this instanceof ReqX))return new ReqX(e);this.version=1.2+" (Beta)";var t=this;var n=0;var r=[];var i=[];if(!e)e={};var s=function(){n++};var o=function(e){n--;if(e){if(!r)r=[];r.push(e);if(t.error_callback)t.error_callback(e)}if(n==0){if(i.length>0)u();i.splice(0,1);if(t.callback&&i.length<1&&n<1){if(!r||r.length<1)r=null;t.callback(r);t.callback=null}}};var u=function(){if(i.length<1)return;var e=i[0];t.ajax(e.url,e.method,e.data,e.callback)};this.done=function(e){if(typeof e!=="function")return console.warn("ReqX.done() only accepts functions");t.callback=e;return this};this.error=function(e){if(typeof e!=="function")return console.warn("ReqX.errors() only accepts functions");t.error_callback=e;return this};this.ajax=function(r,u,a,f){var l=function(){if(e.sync&&n>0){i.unshift({url:r,method:u,data:a,callback:f});return}t.ajax(r,u,a,f)};if(e.sync&&n>0){var c={url:r,method:u,data:a,callback:f};i.push(c);return this}if(typeof u=="function"){f=u;a=u=undefined}if(typeof a=="function"){f=a;a=undefined}s();$.ajax({url:r,cache:e.cache||true,type:u||e.default_method||"GET",data:a||{},dataType:e.dataType}).done(function(e){if(f)f(null,e,l);o()}).error(function(e,t,n){if(f)f(e);o(e)});return this};this.get=function(e,t,n){if(!t){n=t;t=undefined}this.ajax(e,"GET",t,n);return this};this.post=function(e,t,n){if(!t){n=t;t=undefined}this.ajax(e,"POST",t,n);return this};return this}
+
 			var load = ReqX({sync: false});
-			// load.get('/api/camera', { id: 1 }, function(err, res, again){
-			// 	if(err) return alert(err);
-			// 	$('#Selector').html(res);
-			// 	setTimeout(again, 10000);
-			// });
-			// load.get('/api/snesor', { address: '0x04' }, function(err, res, next){
-			// 	if(err) return alert(err);
-			// 	$('#Selector').html(res);
-			// 	setTimeout(again, 150000);
-			// });
+
 			var medeina = function(){};
 			(function(){
 				var _self = this;
@@ -46,9 +38,16 @@
 				}
 				this.init.sensor = function (name, sensors){
 					console.log("Sensor module: "+name+" has been loaded!");
-
+					var sensorContainer = $("<div>").attr("id", name).addClass("sensor").appendTo("body");
+					$("<h2>").text(name).appendTo(sensorContainer);
+					var sensorVal = $("<p>").appendTo(sensorContainer);
 					sensors.forEach(function (sensor){
-						
+						load.get("/api/sensor/"+name+"/"+sensor.id, function(err, res, again){
+							if(err) return console.log(err.responseText);
+							console.log("Sensor: "+name+"."+sensor.id+" = "+res);
+							sensorVal.text(res);
+							setTimeout(again, sensor.update);
+						});
 					});
 				}
 				this.init.camera = function (name, settings){
@@ -59,6 +58,7 @@
 					var outletContainer = $("<div>").attr("id", name).addClass("power_"+settings.outlets+"ch");
 					_self.outlet(name, "a", "r", function(result){
 						var outletState = result.split(",");
+						console.log(outletState);
 						for(var i = 0; i < settings.outlets; i++) {
 							var button = $("<button>").text(i+1).addClass("outlet "+(i+1)).appendTo(outletContainer);
 							if(outletState[i] == "1"){ button.addClass("on"); } else { button.addClass("off"); }
@@ -86,6 +86,11 @@
 			});
 		</script>
 		<style type="text/css">
+			div.sensor {
+			  width: 100px;
+			  height: 100px;
+			  border: 1px solid red;
+			}
 			div.power_8ch {
 			  width: 110px;
 			  height: 50px;
