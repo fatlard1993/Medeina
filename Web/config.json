@@ -2,31 +2,21 @@
 	"name": "TestBed - #1",
 	"modules": [
 		{
-			"name": "SensorHub-1",
+			"name": "sensor1",
 			"type": "sensor",
-			"address": "0x08",
+			"address": "0x05",
 			"sensors": [
 				{
-					"type": "tempreture",
-					"update": 600000,
+					"id": "1",
+					"type": "temp_humidity",
+					"update": 5000,
+					"bytes": 4,
 					"alert": [
 						{
 							"type": "sms",
 							"desination": "425-870-9881",
-							"min": { "value": 55, "alert": "Temp is low!" },
+							"min": { "value": 60, "alert": "Temp is low!" },
 							"error": { "alert": "Faled to get temp!" }
-						}
-					]
-				},
-				{
-					"type": "soilMoisture",
-					"update": 600000,
-					"alert": [
-						{
-							"type": "sms",
-							"desination": "",
-							"min": { "value": 100, "alert": "Needs water!" },
-							"error": { "alert": "Faled to get soil moisture!" }
 						}
 					]
 				}
