@@ -27,55 +27,57 @@
 			var medeina = function(){};
 			(function(){
 				var _self = this;
-				this.outlet = function(num, action){
-					var retVal;
-					ReqX().post("/outlet", { OutletNum: num, Action: action }, function(err, res){
+				this.outlet = function(name, num, action, callback){
+					load.post("/api/power/"+name, { OutletNum: num, Action: action }, function(err, res){
 						if(err) return console.log(err.responseText);
-						if(action == 1 || action == 0){
-							if(res == 1){
-								alert("Success!");
-							} else{
-								alert("Failed! Reason: "+res);
-							}
-						} else{
-							// if(res == 1){
-							// 	alert("Outlet "+num+" is ON!");
-							// } else{
-							// 	alert("Outlet "+num+" is OFF!");
-							// }
-							console.log(res);
-							retVal = res;
-						}
+						if (typeof callback === "function") { callback(res); }
 					});
-					return retVal;
 				}
 				this.init = function(){
-					_self.outletState = _self.outlet("a", "r");
-					ReqX({dataType: "json"}).get("/getConfig", function(err, result){
+					ReqX({dataType: "json"}).get("/api/config", function(err, result){
 						if(err) return console.log(err);
 						_self.config = result;
-						console.log("Config loaded!");
+						console.log("Config file loaded!");
+						_self.config.modules.forEach(function (module){
+							_self.init[module.type](module.name, module.sensors || module.settings);
+						});
 					});
-					$(".action").prop("disabled", true);
-					$("#turnOn").click(function(){
-						_self.outlet($("#outletInput").val(), "1");
+					
+				}
+				this.init.sensor = function (name, sensors){
+					console.log("Sensor module: "+name+" has been loaded!");
+
+					sensors.forEach(function (sensor){
+						
 					});
-					$("#turnOff").click(function(){
-						_self.outlet($("#outletInput").val(), "0");
-					});
-					$("#readState").click(function(){
-						_self.outlet($("#outletInput").val(), "r");
-					});
-					$(".action").click(function(){
-						$("#outletInput").val("");
-						$(".action").prop("disabled", true);
-					});
-					$("#outletInput").keyup(function(){
-						if($(this).val() != ""){
-							$(".action").prop("disabled", false);
-						} else{
-							$(".action").prop("disabled", true);
+				}
+				this.init.camera = function (name, settings){
+					console.log("Camera module: "+name+" has been loaded!");
+				}
+				this.init.power = function(name, settings){
+					console.log("Power module: "+name+" has been loaded!");
+					var outletContainer = $("<div>").attr("id", name).addClass("power_"+settings.outlets+"ch");
+					_self.outlet(name, "a", "r", function(result){
+						var outletState = result.split(",");
+						for(var i = 0; i < settings.outlets; i++) {
+							var button = $("<button>").text(i+1).addClass("outlet "+(i+1)).appendTo(outletContainer);
+							if(outletState[i] == "1"){ button.addClass("on"); } else { button.addClass("off"); }
 						}
+						outletContainer.appendTo("body");
+
+						$(".outlet").click(function(){
+							var action = "0", thisOutlet = this;
+							if($(this).hasClass("off")){ action = "1"; }
+							$(this).removeClass("on").removeClass("off").addClass("setting");
+							_self.outlet($(this).parent().attr('id'), $(this).text(), action, function(result){
+								if(result == 1){
+									$(thisOutlet).removeClass("setting");
+									if(action == "1"){ $(thisOutlet).addClass("on"); } else{ $(thisOutlet).addClass("off"); }
+								} else{
+									alert("There was an error! "+result);
+								}
+							});
+						});
 					});
 				}
 			}).call(medeina);
@@ -85,7 +87,7 @@
 		</script>
 		<style type="text/css">
 			div.power_8ch {
-			  width: 120px;
+			  width: 110px;
 			  height: 50px;
 			  border: 1px solid;
 			}
@@ -98,23 +100,12 @@
 			button.outlet.off {
 			  background-color: #FF1818;
 			}
+			button.outlet.setting {
+			  background-color: #FFF343;
+			}
 		</style>
 	</head>
 
 	<body>
-		<input type="text" id="outletInput">
-		<button id="turnOn" class="action">Turn On</button>
-		<button id="turnOff" class="action">Turn Off</button>
-		<button id="readState" class="action">Read State</button>
-		<div class="power_8ch">
-			<button class="outlet 1">1</button>
-			<button class="outlet 2">2</button>
-			<button class="outlet 3">3</button>
-			<button class="outlet 4">4</button>
-			<button class="outlet 5">5</button>
-			<button class="outlet 6">6</button>
-			<button class="outlet 7">7</button>
-			<button class="outlet 8">8</button>
-		</div>
 	</body>
 </html>
