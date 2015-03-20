@@ -4,7 +4,7 @@
 		{
 			"name": "SensorHub-1",
 			"type": "sensor",
-			"address": "0x04",
+			"address": "0x08",
 			"sensors": [
 				{
 					"type": "tempreture",
@@ -35,9 +35,10 @@
 		{
 			"name": "Camera-1",
 			"type": "camera",
-			"address": "/dev/video_0",
-			"component": {
+			"address": "/dev/video0",
+			"settings": {
 				"update": 600000,
+				"resolution": "1920x1080",
 				"alert": [
 					{
 						"type": "sms",
@@ -48,17 +49,16 @@
 			}
 		},
 		{
-			"name": "Power-1",
+			"name": "power1",
 			"type": "power",
-			"address": "0x05",
-			"component": {
+			"address": "0x04",
+			"settings": {
 				"outlets": 8,
 				"alert": [
 					{
 						"type": "sms",
 						"desination": "",
-						"error": { "alert": "Faled to set power!" },
-
+						"error": { "alert": "Faled to set power!" }
 					}
 				]
 			}
