@@ -36,16 +36,16 @@ init.sensor = function (name, address, sensors){
 		console.log("> Sensor: "+sensor.id+" is a "+sensor.type+" sensor attatched to: "+name+" at address: "+address+"!");
 		function repeat(){
 			setTimeout(function() {
-				wire.write(String(sensor.id), function(err) {
-					if(err) return next(err);
+				wire.write(sensor.id.toString(), function(err) {
+					if(err) console.log(err);
 					setTimeout(function() {
 						wire.read(sensor.bytes, function (err, result) {
-							if(err) return next(err);
-							//res.send(result.toString());
-							console.log("Result: "+result);
+							if(err) console.log(err);
+							io.emit("id_"+sensor.id, result.toString());
+							sensor.lastVal = result.toString();
 							repeat();
 						});
-					}, 200);
+					}, 250);
 				});
 			}, sensor.update);
 		}
