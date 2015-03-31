@@ -1,35 +1,57 @@
-console.log("Loading Libaries...");
+console.log("Loading libaries...");
 
-var fs = require('fs'), express = require('express'), i2c = require('i2c'), bodyParser = require('body-parser'), spawn = require('child_process').spawn, Camelittle = require('camelittle'), moment = require('moment'), config = require('./config.json');
+var express = require('express');
 var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
+var bodyParser = require('body-parser');
+var fs = require('fs');
+var spawn = require('child_process').spawn;
+var moment = require('moment');
+var i2c = require('i2c');
+var Camelittle = require('camelittle');
 
-var oneDay = 86400000;
+console.log("Loading config...");
+
+var config = require('./config.json');
+
+var port = process.env.PORT || 8087;
+
+console.log("Setting up server...");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
+app.use(express.static(__dirname + '/public', { maxAge: 86400000 }));
 
 var init = function (){
-	console.log("Initalizing...");
+	console.log("Initalizing modules...");
 	config.modules.forEach(function (module){
 		init[module.type](module.name, module.address, module.sensors || module.settings);
 	});
 }
 init.sensor = function (name, address, sensors){
 	console.log("Sensor module: "+name+" at address: "+address+" has been loaded!");
-
+	var wire = new i2c(address, { device: '/dev/i2c-1' });
 	sensors.forEach(function (sensor){
-		console.log("> Sensor: "+sensor.id+" is a "+sensor.type+" sensor and is attatched to: "+name+" at address: "+address+"!");
+		console.log("> Sensor: "+sensor.id+" is a "+sensor.type+" sensor attatched to: "+name+" at address: "+address+"!");
+		function repeat(){
+			setTimeout(function() {
+				wire.write(String(sensor.id), function(err) {
+					if(err) return next(err);
+					setTimeout(function() {
+						wire.read(sensor.bytes, function (err, result) {
+							if(err) return next(err);
+							//res.send(result.toString());
+							console.log("Result: "+result);
+							repeat();
+						});
+					}, 200);
+				});
+			}, sensor.update);
+		}
+		repeat();
 		app.get("/api/sensor/"+name+"/"+sensor.id, function (req, res, next){
-			var wire = new i2c(address, { device: '/dev/i2c-1' });
-			wire.write(sensor.id, function(err) {
-				if(err) return next(err);
-				setTimeout(function() {
-					wire.read(sensor.bytes, function (err, result) {
-						if(err) return next(err);
-						res.send(result.toString());
-					});
-				}, 100);
-			});
+			
 		});
 	});
 }
@@ -45,10 +67,9 @@ init.camera = function (name, address, settings){
 }
 init.power = function(name, address, settings){
 	console.log("Power module: "+name+" at address: "+address+" has been loaded!");
-
+	var wire = new i2c(address, { device: '/dev/i2c-1' });
 	app.post("/api/power/"+name, function (req, res, next){
 		var outletNum = req.body.OutletNum.charCodeAt(), action = req.body.Action.charCodeAt(), length = 1, timeout = 200;
-		var wire = new i2c(address, { device: '/dev/i2c-1' });
 		if(action == 114 && outletNum == 97){ // If action is read and outletNum is all
 			length = settings.outlets;
 			timeout = 500;
@@ -65,6 +86,13 @@ init.power = function(name, address, settings){
 	});
 }
 init(config);
+
+io.on('connection', function(socket){
+  console.log('a user connected');
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
+});
 
 app.get("/api/config", function (req, res, next){
 	fs.readFile("./config.json", function (err, file){
@@ -95,9 +123,7 @@ app.get("/api/config", function (req, res, next){
 	// });
 });
 
-app.use(express.static(__dirname + '/public', { maxAge: oneDay }));
-
-app.listen(process.env.PORT || 8087);
-
-console.log("Ready!");
-console.log(moment().format("dddd, MMMM Do YYYY, h:mm:ss a"));
+server.listen(port, function () {
+  console.log('Server listening at port %d', port);
+  console.log("Ready! - "+moment().format("dddd, MMMM Do YYYY, h:mm:ss a"));
+});
