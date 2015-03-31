@@ -27,7 +27,7 @@
 					});
 				}
 				this.init = function(){
-					var socket = io();
+					_self.socket = io();
 					ReqX({dataType: "json"}).get("/api/config", function(err, result){
 						if(err) return console.log(err);
 						_self.config = result;
@@ -36,20 +36,22 @@
 							_self.init[module.type](module.name, module.sensors || module.settings);
 						});
 					});
-					
 				}
 				this.init.sensor = function (name, sensors){
 					console.log("Sensor module: "+name+" has been loaded!");
 					var sensorContainer = $("<div>").attr("id", name).addClass("sensor").appendTo("body");
 					$("<h2>").text(name).appendTo(sensorContainer);
 					sensors.forEach(function (sensor){
-						$("<div>").addClass(sensor.type+" id_"+sensor.id).appendTo(sensorContainer);
-						// load.get("/api/sensor/"+name+"/"+sensor.id, function(err, res, again){
-						// 	if(err) return console.log(err.responseText);
-						// 	console.log("Sensor: "+name+"."+sensor.id+" = "+res);
-						// 	$("#"+name+" .id_"+sensor.id).text(res);
-						// 	setTimeout(again, sensor.update);
-						// });
+						var sensorDiv = $("<div>").addClass(sensor.type+" id_"+sensor.id).appendTo(sensorContainer);
+						sensorDiv.text(sensor.lastVal).addClass("oldData");
+						_self.socket.on("id_"+sensor.id, function (data) {
+							if(/^9/.test(data)){
+								console.error("Sensor "+sensor.id+" - BAD DATA!");
+							} else{
+						    console.log("Sensor "+sensor.id+" - "+data);
+						    sensorDiv.text(data).removeClass("oldData");
+							}
+						});
 					});
 				}
 				this.init.camera = function (name, settings){
@@ -109,6 +111,9 @@
 			}
 			button.outlet.setting {
 			  background-color: #FFF343;
+			}
+			.oldData{
+				background-color: #FFF343;
 			}
 		</style>
 	</head>
