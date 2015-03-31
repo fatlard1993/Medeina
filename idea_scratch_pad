@@ -1,6 +1,8 @@
 - ability to change i2c address of any slave device through web interface (to avoid conflicts) - STRECH - automatically do this?
 - ability to create a module for specific outlet(s) eg. light cycle module, fan cycle - See soft modules below
 - ability to use sensor alerts to trigger outlets
+- ability to poll sensors more often based on what activity is happening, eg. when c02 is on poll c02 sensor every second
+- ability to have sensor alerts make an emergancy sensor poll(regardless of sensor update frequency)
 - day vs. night settings
 
 - Hard module types:
