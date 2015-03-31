@@ -11,6 +11,7 @@
 					"type": "temp_humidity",
 					"update": 8000,
 					"bytes": 4,
+					"lastVal": "10,0,20,0",
 					"alert": [
 						{
 							"type": "sms",
@@ -25,6 +26,7 @@
 					"type": "waterLevel",
 					"update": 5000,
 					"bytes": 1,
+					"lastVal": "50",
 					"alert": [
 						{
 							"type": "sms",
