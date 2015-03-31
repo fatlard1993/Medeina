@@ -3,7 +3,7 @@ Medeina is an automated envrioment control system(AECS). That means if you have 
 
 ## Setup! *mock up
 1. Make all physical connections
-  1. Place sensors in apropriate places in your grow room
+  1. Place sensors in apropriate places in your enviroment
   1. Connect sensors to sensor hubs
   1. Connect sensor hubs to brain
   1. Connect power moduel(s) to brain
@@ -16,8 +16,8 @@ Medeina is an automated envrioment control system(AECS). That means if you have 
   1. Go through the wizard(s) (depending on how many sensor hubs you have configured) to configure your connected sensors/alerts
   
 ## Files!
-### power_8ch.ino
-This file is ment to be run on an arduino nano(328). It is a 8 chanel powerstrip, each of the 8 outlets are individually controlable via i2c and Serial(for testing only).
+### power.ino
+This is a X chanel powerstrip, each of the X outlets are individually controlable via i2c.
 
 ### garduino.ino
 This file is intended to serve as a small all-in-one standalone system for testing sensors and gathering data.
