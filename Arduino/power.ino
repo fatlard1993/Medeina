@@ -62,7 +62,7 @@ void outlet(int num, char action){
   if(num == ALL){
     for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){
       if(action == 'r'){
-        outletState[i - FIRST_OUTLET_PIN] = digitalRead(i);
+        outletState[i - FIRST_OUTLET_PIN] = !digitalRead(i);
         data = ALL;
       } else {
         int iaction = (int)action - '0'; // Convert char to int
@@ -72,7 +72,7 @@ void outlet(int num, char action){
     }
   }else{
     if(action == 'r'){
-        data = digitalRead(num);
+        data = !digitalRead(num);
     } else {
       int iaction = (int)action - '0'; // Convert char to int
       digitalWrite(num, iaction);
