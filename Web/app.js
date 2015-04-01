@@ -75,10 +75,10 @@ init.power = function(name, address, settings){
 			timeout = 500;
 		}
 		wire.write([action, outletNum], function(err) {
-			if(err) return next(err);
+			if(err) console.log(err);
 			setTimeout(function() {
 				wire.read(length, function (err, result) {
-					if(err) return next(err);
+					if(err) console.log(err);
 					res.send(result.toString());
 				});
 			}, timeout);
@@ -88,9 +88,9 @@ init.power = function(name, address, settings){
 init(config);
 
 io.on('connection', function(socket){
-  console.log('a user connected');
+  //console.log('a user connected');
   socket.on('disconnect', function(){
-    console.log('user disconnected');
+    //console.log('user disconnected');
   });
 });
 
