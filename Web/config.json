@@ -35,6 +35,21 @@
 							"error": { "alert": "Faled to get water level!" }
 						}
 					]
+				},
+				{
+					"id": 3,
+					"type": "soilMoisture",
+					"update": 12000,
+					"bytes": 1,
+					"lastVal": "165",
+					"alert": [
+						{
+							"type": "sms",
+							"desination": "425-870-9881",
+							"min": { "value": 50, "alert": "Soil is dry!" },
+							"error": { "alert": "Faled to get soil moisture!" }
+						}
+					]
 				}
 			]
 		},
