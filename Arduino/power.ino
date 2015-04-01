@@ -11,6 +11,7 @@
 // Define i2c responce messages
 #define NO_DATA 9 // No data ready to be written (try again)
 #define OUTLET_ERROR 2 // There was an error trying to use the provided outlet number
+#define OUTPUT_ERROR 3
 #define SUCCESS 1 // Operation succeded
 
 int data = NO_DATA; // Data to be writen back to I2c master
@@ -42,7 +43,7 @@ void receiveEvent(int howMany){
     outletNum = (int)command[1] - '0'; // Convert char to int
     if(outletNum > NUM_OUTLETS || outletNum < 1){
       data = OUTLET_ERROR;
-    } else{
+    } else {
       outletNum = outletNum + (FIRST_OUTLET_PIN - 1); // Adjust for the first pin, result is actual arduino pin used
     }
   }
@@ -65,18 +66,26 @@ void outlet(int num, char action){
         outletState[i - FIRST_OUTLET_PIN] = !digitalRead(i);
         data = ALL;
       } else {
-        int iaction = (int)action - '0'; // Convert char to int
+        int iaction = !((int)action - '0'); // Convert char to int and invert
         digitalWrite(i, iaction);
+        if(digitalRead(num) == iaction){
         data = SUCCESS;
+      } else {
+        data = OUTPUT_ERROR;
+      }
       }
     }
   }else{
     if(action == 'r'){
         data = !digitalRead(num);
     } else {
-      int iaction = (int)action - '0'; // Convert char to int
+      int iaction = !((int)action - '0'); // Convert char to int and invert
       digitalWrite(num, iaction);
-      data = SUCCESS;
+      if(digitalRead(num) == iaction){
+        data = SUCCESS;
+      } else {
+        data = OUTPUT_ERROR;
+      }
     }
   }
 }
