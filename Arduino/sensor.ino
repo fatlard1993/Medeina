@@ -50,6 +50,9 @@ void requestEvent(void){
       case '2':
         Wire.write(100);
         break;
+      case '3':
+        Wire.write(200);
+        break;
       default:
         Wire.write(NO_DATA);
   }
