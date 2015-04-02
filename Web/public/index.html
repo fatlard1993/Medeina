@@ -37,14 +37,17 @@
         }
         this.init.sensor = function (name, sensors){
           console.log("Sensor module: "+name+" has been loaded!");
-          var sensorContainer = $("<div>").attr("id", name).addClass("sensor").appendTo("body");
+          var sensorContainer = $("<div>").attr("id", name).addClass("sensor module").appendTo("body");
           $("<h2>").text(name).appendTo(sensorContainer);
           sensors.forEach(function (sensor){
-            var sensorDiv = $("<div>").addClass(sensor.type+" id_"+sensor.id).appendTo(sensorContainer);
+          	console.log("> Sensor "+sensor.id+" is a "+sensor.type+" sensor and is now configured!");
+            var sensorDiv = $("<div>").addClass(sensor.type+" id_"+sensor.id);
+            $("<h3>").text(sensor.type).appendTo(sensorDiv);
             sensorDiv.text(sensor.lastVal).addClass("oldData");
+            sensorDiv.appendTo(sensorContainer);
             _self.socket.on("id_"+sensor.id, function (data) {
               if(/^9/.test(data) || /255$/.test(data)){
-                console.error("Sensor "+sensor.id+" - BAD DATA!");
+                console.error("Sensor "+sensor.id+" - BAD DATA! "+data);
               } else{
                 console.log("Sensor "+sensor.id+" - "+data);
                 sensorDiv.text(data).removeClass("oldData");
@@ -87,11 +90,30 @@
       });
     </script>
     <style type="text/css">
+    	body div.module {
+			  float: left;
+			  margin-right: 5px;
+			}
       div.sensor {
-        width: 100px;
-        height: 100px;
+        width: 200px;
         border: 1px solid red;
       }
+      .sensor h2 {
+			  text-align: center;
+			  margin: 3px;
+			}
+			.sensor div h3 {
+			  margin: 3px;
+			}
+			.temp_humidity {
+			  border: 1px solid blue;
+			}
+			.waterLevel {
+			  border: 1px solid green;
+			}
+			.soilMoisture {
+			  border: 1px solid purple;
+			}
       div.power_8ch {
         width: 110px;
         height: 50px;
@@ -114,7 +136,6 @@
       }
     </style>
   </head>
-
   <body>
   </body>
 </html>
