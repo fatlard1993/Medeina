@@ -20,7 +20,7 @@ var port = process.env.PORT || 8087;
 console.log("Setting up server...");
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true })); 
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public', { maxAge: 86400000 }));
 
 var init = function (){
@@ -51,7 +51,7 @@ init.sensor = function (name, address, sensors){
 		}
 		repeat();
 		app.get("/api/sensor/"+name+"/"+sensor.id, function (req, res, next){
-			
+
 		});
 	});
 }
