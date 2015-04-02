@@ -33,10 +33,10 @@ init.sensor = function (name, address, sensors){
 	console.log("Sensor module: "+name+" at address: "+address+" has been loaded!");
 	var wire = new i2c(address, { device: '/dev/i2c-1' });
 	sensors.forEach(function (sensor){
-		console.log("> Sensor: "+sensor.id+" is a "+sensor.type+" sensor attatched to: "+name+" at address: "+address+"!");
+		console.log("> Sensor "+sensor.id+" is a "+sensor.type+" sensor attatched to: "+name+" at address: "+address+"!");
 		function repeat(){
 			setTimeout(function() {
-				wire.write(sensor.id.toString(), function(err) {
+				wire.write(sensor.id, function(err) {
 					if(err) console.log(err);
 					setTimeout(function() {
 						wire.read(sensor.bytes, function (err, result) {
