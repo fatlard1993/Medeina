@@ -7,7 +7,7 @@
 			"address": "0x05",
 			"sensors": [
 				{
-					"id": 1,
+					"id": "1",
 					"type": "temp_humidity",
 					"update": 8000,
 					"bytes": 4,
@@ -22,7 +22,7 @@
 					]
 				},
 				{
-					"id": 2,
+					"id": "2",
 					"type": "waterLevel",
 					"update": 5000,
 					"bytes": 1,
@@ -37,7 +37,7 @@
 					]
 				},
 				{
-					"id": 3,
+					"id": "3",
 					"type": "soilMoisture",
 					"update": 12000,
 					"bytes": 1,
@@ -82,7 +82,14 @@
 						"error": { "alert": "Faled to set power!" }
 					}
 				]
-			}
+			},
+			"softModules": [
+				{
+					"name": "mainLights",
+					"type": "light",
+					"outlets": [1, 2, 4]
+				}
+			]
 		}
 	]
 }
