@@ -9,31 +9,23 @@ fs = require('fs'),
 spawn = require('child_process').spawn,
 Camelittle = require('camelittle'),
 serialport = require("serialport"),
-SerialPort = serialport.SerialPort;
-
-console.log("Loading config...");
-
-var config = require('./config.json');
-
-var port = process.env.PORT || 8087;
-
-console.log("Setting up server...");
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname + '/public', { maxAge: 86400000 }));
+SerialPort = serialport.SerialPort,
+config = require('./config.json'),
+port = process.env.PORT || 8087,
+foundModules = [];
 
 var init = function (){
 	console.log("Checking for modules...");
 	serialport.list(function(err, ports) {
 		if(ports){
 			ports.forEach(function(port) {
+				var counter = 0;
 		    var thisPort = new SerialPort(port.comName, { baudrate: 9600, parser: serialport.parsers.readline("\n") });
 		    thisPort.on("open", function() {
 				  console.log('opened: '+port.comName);
 				  thisPort.on('data', function(data) {
 				  	data = data.trim();
-			      console.log("From "+port.comName+": "+data);
+			      // console.log("From "+port.comName+": "+data);
 			      if(data == "Im a module!"){
 							console.log("Its a module!!");
 			    		thisPort.write("good", function(err) { if(err) console.error('ERROR - '+err) });
@@ -41,20 +33,28 @@ var init = function (){
 			      	console.log("CONNECTED TO "+port.comName);
 			      } else if(/^{/.test(data)){
 							console.log("==================");
-							var data = data.replace(/\'/g, "\"");
+							data = data.replace(/\'/g, "\"");
 			      	var JSONdata = JSON.parse(data);
-							console.log(port.comName+" is a "+JSONdata.type+" module");
+							console.log(port.comName+" is a "+JSONdata.type+" module at ID: "+JSONdata.id);
+							foundModules[counter] = JSONdata;
+							counter++;
 			      }
 			  	});
 				});
 			});
 		} else{
-			console.warn("There were no modules detected.")
+			console.warn("There were no modules detected.");
 		}
 	});
 	// config.modules.forEach(function (module){
 	// 	init[module.type](module.name, module.address, module.sensors || module.settings);
 	// });
+
+	console.log("Setting up server...");
+
+	app.use(bodyParser.json());
+	app.use(bodyParser.urlencoded({ extended: true }));
+	app.use(express.static(__dirname + '/public', { maxAge: 86400000 }));
 }
 init.sensor = function (name, address, sensors){
 	console.log("Sensor module: "+name+" at address: "+address+" has been loaded!");
