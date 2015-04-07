@@ -32,12 +32,24 @@ var init = function (){
 			      } else if(data == "connected"){
 			      	console.log("CONNECTED TO "+port.comName);
 			      } else if(/^{/.test(data)){
-							console.log("==================");
 							data = data.replace(/\'/g, "\"");
 			      	var JSONdata = JSON.parse(data);
-							console.log(port.comName+" is a "+JSONdata.type+" module at ID: "+JSONdata.id);
-							foundModules[counter] = JSONdata;
-							counter++;
+							if(JSONdata.dataType == "info"){
+								console.log("==================");
+								console.log(port.comName+" is a "+JSONdata.type+" module at ID: "+JSONdata.id);
+								foundModules[counter] = JSONdata;
+								console.log(counter);
+								counter++;
+							} else if(JSONdata.dataType == "sensorData"){
+								switch(JSONdata.type){
+									case 'temp_humidity':
+										break;
+									case 'waterLevel':
+										break;
+									case 'soilMoisture':
+										break;
+								}
+							}
 			      }
 			  	});
 				});

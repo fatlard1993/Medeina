@@ -47,3 +47,5 @@
   - loads any configured camera modules, (perhaps preforms a scan?)
   - loads all (soft)modules that are configured
 - initiates web server and sockets
+- sensor hubs send updates every X often based on sensor average (how many readings between)
+- server saves all new changes to file every X (configured) - and when sent a save command
