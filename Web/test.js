@@ -29,25 +29,29 @@ var init = function (){
 			      if(data == "Im a module!"){
 							console.log("Its a module!!");
 			    		thisPort.write("good", function(err) { if(err) console.error('ERROR - '+err) });
-			      } else if(data == "connected"){
-			      	console.log("CONNECTED TO "+port.comName);
-			      } else if(/^{/.test(data)){
-							data = data.replace(/\'/g, "\"");
+			      } else if(/^J/.test(data)){
+							data = data.replace(/^J/, "").replace(/\'/g, "\"");
 			      	var JSONdata = JSON.parse(data);
 							if(JSONdata.dataType == "info"){
+								console.log(port.comName+" is a "+JSONdata.type+" module at address: "+JSONdata.address);
 								console.log("==================");
-								console.log(port.comName+" is a "+JSONdata.type+" module at ID: "+JSONdata.id);
 								foundModules[counter] = JSONdata;
-								console.log(counter);
+								// console.log(counter);
 								counter++;
 							} else if(JSONdata.dataType == "sensorData"){
 								switch(JSONdata.type){
 									case 'temp_humidity':
+										var data = JSONdata.data.split(",");
+										console.log("Sensor "+JSONdata.hostAddress+"."+JSONdata.id+", Temp: "+data[0]+" | Humidity: "+data[1]);
 										break;
 									case 'waterLevel':
+										console.log("Sensor "+JSONdata.hostAddress+"."+JSONdata.id+", Water level: "+JSONdata.data);
 										break;
 									case 'soilMoisture':
+										console.log("Sensor "+JSONdata.hostAddress+"."+JSONdata.id+", Soil moisture: "+JSONdata.data);
 										break;
+									default:
+										console.log("Unknown sensor type!");
 								}
 							}
 			      }

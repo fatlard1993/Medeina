@@ -4,14 +4,12 @@
 		{
 			"name": "sensor1",
 			"type": "sensor",
-			"address": "0x05",
+			"address": "0x01",
 			"sensors": [
 				{
 					"id": "1",
 					"type": "temp_humidity",
-					"update": 8000,
-					"bytes": 4,
-					"lastVal": "10,0,20,0",
+					"lastVal": [25,35],
 					"alert": [
 						{
 							"type": "sms",
@@ -24,8 +22,6 @@
 				{
 					"id": "2",
 					"type": "waterLevel",
-					"update": 5000,
-					"bytes": 1,
 					"lastVal": "50",
 					"alert": [
 						{
@@ -39,8 +35,6 @@
 				{
 					"id": "3",
 					"type": "soilMoisture",
-					"update": 12000,
-					"bytes": 1,
 					"lastVal": "165",
 					"alert": [
 						{
@@ -72,7 +66,7 @@
 		{
 			"name": "power1",
 			"type": "power",
-			"address": "0x04",
+			"address": "0x02",
 			"settings": {
 				"outlets": 8,
 				"alert": [
