@@ -1,6 +1,6 @@
 {
 	"name": "TestBed - #1",
-	"modules": [
+	"hardModules": [
 		{
 			"name": "sensor1",
 			"type": "sensor",
@@ -76,14 +76,22 @@
 						"error": { "alert": "Faled to set power!" }
 					}
 				]
-			},
-			"softModules": [
-				{
-					"name": "mainLights",
-					"type": "light",
-					"outlets": [1, 2, 4]
-				}
-			]
+			}
+		}
+	],
+	"softModules": [
+		{
+			"name": "Main Lights",
+			"type": "light",
+			"settings": {
+				"alert": [
+					{
+						"type": "sms",
+						"desination": "",
+						"error": { "alert": "Faled to get image!" }
+					}
+				]
+			}
 		}
 	]
 }
