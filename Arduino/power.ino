@@ -50,13 +50,15 @@ void serialEvent() {
 }
 
 void outlet(int num, char action){
+  String longData;
   if(num == ALL){
     for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){
       if(action == 'r'){
-        outletState[i - FIRST_OUTLET_PIN] = !digitalRead(i);
-        Serial.println(i);
         if(i == NUM_OUTLETS + (FIRST_OUTLET_PIN - 1)){ // At the end of this loop
-          Serial.println("Fuck me...");
+          longData = longData + !digitalRead(i);
+          Serial.println(longData);
+        } else {
+          longData = longData + !digitalRead(i) + ",";
         }
       } else {
         int iaction = !((int)action - '0'); // Convert char to int and invert
