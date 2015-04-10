@@ -1,6 +1,20 @@
+/*---------- Useage ----------
+-Initiate connection with 'secret handshake', "Im a module" -> "good"
+-Send commands following this structure *XYZ
+-X = An enumerated key to send back to the requestor
+-Y = The outlet number, a for all
+-Z = The action: r(read),0(off),1(on)
+-=============================
+-The responce will be in this structure: J{'dataType': 'powerData', 'data': 'X/[Y,Y,Y,...]', 'for': 'Z'}
+-'data' will either be X(0/1) a single digit, or [Y,Y,Y,...](0/1) an array of digits
+-'for' will contain the enumerated transaction key
+*/
 bool isConnected;
 
 String info = "J{'dataType': 'info', 'address': '0x02', 'type': 'power'}";
+String preData = "J{'dataType': 'powerData', 'data': '";
+String postData = "', 'for': '";
+String postFor = "'}";
 
 //========== To be configured by wizard ==========//
 #define NUM_OUTLETS 8
@@ -9,7 +23,6 @@ String info = "J{'dataType': 'info', 'address': '0x02', 'type': 'power'}";
 
 #define ALL 666
 
-bool outletState[NUM_OUTLETS];
 int refBit;
 
 void setup(void){
@@ -40,7 +53,7 @@ void serialEvent() {
     } else {
       outletNum = (int)command[1] - '0'; // Convert char to int
       if(outletNum > NUM_OUTLETS || outletNum < 1){
-        Serial.println("error");
+        Serial.println("J{'dataType': 'powerData', 'error': 'outlet not within range - "+String(outletNum)+"'}");
       } else {
         outletNum = outletNum + (FIRST_OUTLET_PIN - 1); // Adjust for the first pin, result is actual arduino pin used
       }
@@ -50,15 +63,15 @@ void serialEvent() {
 }
 
 void outlet(int num, char action){
-  String longData;
+  String dataArray = "J{'dataType': 'powerData', 'data': [";
   if(num == ALL){
     for(int i = FIRST_OUTLET_PIN; i <= NUM_OUTLETS + (FIRST_OUTLET_PIN - 1); i++){
       if(action == 'r'){
         if(i == NUM_OUTLETS + (FIRST_OUTLET_PIN - 1)){ // At the end of this loop
-          longData = longData + !digitalRead(i);
-          Serial.println(longData);
+          dataArray = dataArray + !digitalRead(i) + "], 'for': '"+refBit+"'}";
+          Serial.println(dataArray);
         } else {
-          longData = longData + !digitalRead(i) + ",";
+          dataArray = dataArray + !digitalRead(i) + ",";
         }
       } else {
         int iaction = !((int)action - '0'); // Convert char to int and invert
@@ -66,7 +79,7 @@ void outlet(int num, char action){
         if(digitalRead(num) == iaction){
           Serial.println("success");
         } else {
-          Serial.println("error");
+          Serial.println("J{'dataType': 'powerData', 'error': 'error setting desired state - D"+String(iaction)+" - R"+digitalRead(num)+"'}");
         }
       }
     }
@@ -77,9 +90,9 @@ void outlet(int num, char action){
       int iaction = !((int)action - '0'); // Convert char to int and invert
       digitalWrite(num, iaction);
       if(digitalRead(num) == iaction){
-        Serial.println("success");
+        Serial.println("J{'dataType': 'powerData', 'data': 1, 'for': '"+String(refBit)+"'}");
       } else {
-        Serial.println("error");
+        Serial.println("J{'dataType': 'powerData', 'error': 'error setting desired state - D"+String(iaction)+" - R"+digitalRead(num)+"'}");
       }
     }
   }
