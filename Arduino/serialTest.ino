@@ -1,6 +1,6 @@
 bool isConnected;
 
-String info = "J{'dataType': 'info', 'address': '0x01', 'type': 'sensor'}";
+String info = "J{'dataType': 'info', 'address': '0x01', 'type': 'sensor', 'sensors': ['temp_humidity', 'waterLevel', 'soilMoisture']}";
 String sensor1Data = "J{'dataType': 'sensorData', 'hostAddress': '0x01', 'id': 1, 'type': 'temp_humidity', 'data': '24,35'}";
 String sensor2Data = "J{'dataType': 'sensorData', 'hostAddress': '0x01', 'id': 2, 'type': 'waterLevel', 'data': '87'}";
 String sensor3Data = "J{'dataType': 'sensorData', 'hostAddress': '0x01', 'id': 3, 'type': 'soilMoisture', 'data': '96'}";

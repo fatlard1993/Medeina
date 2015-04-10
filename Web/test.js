@@ -35,9 +35,19 @@ var init = function (){
 							if(JSONdata.dataType == "info"){
 								console.log(port.comName+" is a "+JSONdata.type+" module at address: "+JSONdata.address);
 								console.log("==================");
-								foundModules[counter] = JSONdata;
+								foundModules[counter] = {"port": thisPort, "address": JSONdata.address, "type": JSONdata.type};
 								// console.log(counter);
 								counter++;
+								if(counter == ports.length){ // Last one!
+									console.log(foundModules);
+									config.hardModules.forEach(function (module){
+										init[module.type](module.name, module.address, module.sensors || module.settings);
+									});
+									console.log("Setting up server...");
+									app.use(bodyParser.json());
+									app.use(bodyParser.urlencoded({ extended: true }));
+									app.use(express.static(__dirname + '/public', { maxAge: 86400000 }));
+								}
 							} else if(JSONdata.dataType == "sensorData"){
 								switch(JSONdata.type){
 									case 'temp_humidity':
@@ -59,44 +69,61 @@ var init = function (){
 				});
 			});
 		} else{
-			console.warn("There were no modules detected.");
+			console.log("There were no modules detected.");
 		}
 	});
-	// config.modules.forEach(function (module){
-	// 	init[module.type](module.name, module.address, module.sensors || module.settings);
-	// });
-
-	console.log("Setting up server...");
-
-	app.use(bodyParser.json());
-	app.use(bodyParser.urlencoded({ extended: true }));
-	app.use(express.static(__dirname + '/public', { maxAge: 86400000 }));
 }
 init.sensor = function (name, address, sensors){
-	console.log("Sensor module: "+name+" at address: "+address+" has been loaded!");
-	var wire = new i2c(address, { device: '/dev/i2c-1' });
-	sensors.forEach(function (sensor){
-		console.log("> Sensor "+sensor.id+" is a "+sensor.type+" sensor attatched to: "+name+" at address: "+address+"!");
-		function repeat(){
-			setTimeout(function() {
-				wire.write(sensor.id, function(err) {
-					if(err) console.log(err);
-					setTimeout(function() {
-						wire.read(sensor.bytes, function (err, result) {
-							if(err) console.log(err);
-							io.emit("id_"+sensor.id, result.toString());
-							sensor.lastVal = result.toString();
-							repeat();
-						});
-					}, 250);
-				});
-			}, sensor.update);
-		}
-		repeat();
-		app.get("/api/sensor/"+name+"/"+sensor.id, function (req, res, next){
+	// if address found in foundModules
+	// 	if each sensor matches sensors reported
+	// 		load module
+	// 	else throw error
+	// else throw error
 
-		});
-	});
+	// console.log("Sensor module: "+name+" at address: "+address+" has been loaded!");
+	// var wire = new i2c(address, { device: '/dev/i2c-1' });
+	// sensors.forEach(function (sensor){
+	// 	console.log("> Sensor "+sensor.id+" is a "+sensor.type+" sensor attatched to: "+name+" at address: "+address+"!");
+	// 	function repeat(){
+	// 		setTimeout(function() {
+	// 			wire.write(sensor.id, function(err) {
+	// 				if(err) console.log(err);
+	// 				setTimeout(function() {
+	// 					wire.read(sensor.bytes, function (err, result) {
+	// 						if(err) console.log(err);
+	// 						io.emit("id_"+sensor.id, result.toString());
+	// 						sensor.lastVal = result.toString();
+	// 						repeat();
+	// 					});
+	// 				}, 250);
+	// 			});
+	// 		}, sensor.update);
+	// 	}
+	// 	repeat();
+	// 	app.get("/api/sensor/"+name+"/"+sensor.id, function (req, res, next){
+	//
+	// 	});
+	// });
+}
+init.power = function(name, address, settings){
+	// console.log("Power module: "+name+" at address: "+address+" has been loaded!");
+	// var wire = new i2c(address, { device: '/dev/i2c-1' });
+	// app.post("/api/power/"+name, function (req, res, next){
+	// 	var outletNum = req.body.OutletNum.charCodeAt(), action = req.body.Action.charCodeAt(), length = 1, timeout = 200;
+	// 	if(action == 114 && outletNum == 97){ // If action is read and outletNum is all
+	// 		length = settings.outlets;
+	// 		timeout = 500;
+	// 	}
+	// 	wire.write([action, outletNum], function(err) {
+	// 		if(err) console.log(err);
+	// 		setTimeout(function() {
+	// 			wire.read(length, function (err, result) {
+	// 				if(err) console.log(err);
+	// 				res.send(result.toString());
+	// 			});
+	// 		}, timeout);
+	// 	});
+	// });
 }
 init.camera = function (name, address, settings){
 	console.log("Camera module: "+name+" at address: "+address+" has been loaded!");
@@ -106,26 +133,6 @@ init.camera = function (name, address, settings){
 	    resolution: settings.resolution,
 	    frames: 5,
 	    'no-banner': null
-	});
-}
-init.power = function(name, address, settings){
-	console.log("Power module: "+name+" at address: "+address+" has been loaded!");
-	var wire = new i2c(address, { device: '/dev/i2c-1' });
-	app.post("/api/power/"+name, function (req, res, next){
-		var outletNum = req.body.OutletNum.charCodeAt(), action = req.body.Action.charCodeAt(), length = 1, timeout = 200;
-		if(action == 114 && outletNum == 97){ // If action is read and outletNum is all
-			length = settings.outlets;
-			timeout = 500;
-		}
-		wire.write([action, outletNum], function(err) {
-			if(err) console.log(err);
-			setTimeout(function() {
-				wire.read(length, function (err, result) {
-					if(err) console.log(err);
-					res.send(result.toString());
-				});
-			}, timeout);
-		});
 	});
 }
 init(config);
