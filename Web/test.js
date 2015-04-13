@@ -18,6 +18,7 @@ var init = function (){
 	console.log("Checking for modules...");
 	serialport.list(function(err, ports) {
 		if(ports){
+			console.log(ports.length);
 			ports.forEach(function(port) {
 				var counter = 0;
 		    var thisPort = new SerialPort(port.comName, { baudrate: 9600, parser: serialport.parsers.readline("\n") });
@@ -135,4 +136,17 @@ init.camera = function (name, address, settings){
 	    'no-banner': null
 	});
 }
-init(config);
+// init(config);
+var ls = spawn('ls', '/sys/bus/usb-serial/devices/');
+
+ls.stdout.on('data', function (data) {
+  console.log('stdout: ' + data);
+});
+
+ls.stderr.on('data', function (data) {
+  console.log('stderr: ' + data);
+});
+
+ls.on('close', function (code) {
+  console.log('child process exited with code ' + code);
+});
