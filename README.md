@@ -1,3 +1,8 @@
+# UPDATE 2017
+This project is dead, though I hope to eventually continue this project I discovered along the way that i2c communication is not going to work reliably enough for the length I hoped, I explored some ideas to do with USB serial communication and I believe this is the direction this should take, and should I pick this up again that is where I will start.
+
+
+
 # Medeina
 Medeina is an automated envrioment control system(AECS). That means if you have an enviroment to control, a reptile/amphibian cage/terrarium or a grow room/tent, then Medeina is for you! Medeina can be connected to a seemingly endless number of sensors like: `temp`, `temp_humidity`, `soilMoisture`, `lightIntensity`, `reservoirLevel`, `C02`, `pH`, `flood`, `PIR`, `door`, and even other varous `HID` like a button or fader. In addition to these sensors there are power and camera modules that can be configured. Every input device can trigger an alert such as an email, sms, or even directly interact with other modules, all user configurable! Medeina will walk you through a qick and easy setup process that will create a module for each of the "hard" devices, once you've got everything configured you can set up "soft" modules such as: `light`, `fan`, `humidifier_dehumidifier`, `exhaust`, `nutrient_ph` and `heating_cooling`. From there all youve got to do is input the specific requirements and schedules for your enviroment and its done!
 
