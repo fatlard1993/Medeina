@@ -49,3 +49,54 @@
 - initiates web server and sockets
 - sensor hubs send updates every X often based on sensor average (how many readings between)
 - server saves all new changes to file every X (configured) - and when sent a save command
+
+
+
+
+indoor:
+general
+  nutrient vat
+    water level detector
+    temp sensor
+    nuturient pumps
+    mixing pump
+    supply pump
+  light controller
+  fan controller
+  co2 controller
+
+every plant
+  soil moisture
+  solonoid controlled sprinkler
+every 3 plants
+  temp sensor
+  humidity sensor
+  light sensor
+every 5 plants
+  co2 sensor
+every 10 plants
+  flood sensor
+
+
+outdoor:
+general
+  nutrient vat
+    water level detector
+    temp sensor
+    nuturient pumps
+    mixing pump
+    supply pump
+  weather station
+    temp sensor
+    humidity sensor
+    light sensor
+    wind speed/direction sensor
+    rain detector
+
+every plant
+  soil moisture
+  solonoid controlled sprinkler
+every 3 plants
+  temp sensor
+  humidity sensor
+  light sensor
