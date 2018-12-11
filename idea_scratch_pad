@@ -53,6 +53,22 @@
 
 
 
+This should have a parent app to help configure your "space". (Should have easy duplication, as I imagine that'll be one of the main cases)
+This app will help you figure out the minimum modules you need to operate your space.
+Maybe this should just be the main app.. It lets you set everything up then order, and its ready to go when you get your order..
+Then if you ever want to tweak it you are using the same interface.
+I imagine it will essentially walk you through logical groupings of sensors and use cases trying to maximize the number of overlapping uses.
+Your space would be groups of your individual environments and even groups of groups, possibly even intersecting groups.
+You would have modules that operate on the individual environments as well as at the group level.
+Groups should be based on physical location so as to better make use of shared outlets and sensor hubs.
+USB only goes ~15 ft max which means anything beyond that will have to be another island.
+Each island will need a brain, seems a bit overkill but these things are so cheap these days..
+Brains will probably need to decide a master and all others join as slaves.
+Maybe the user should just set one, that way it could be the one with the most reliable connection or whatever.
+Would probably still need to have someone takeover if the other goes down though.
+Or, there could be slave brains that are weaker and more dedicated.
+
+
 indoor:
 general
   nutrient vat
