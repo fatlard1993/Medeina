@@ -1,0 +1,27 @@
+{
+  "name": "medeina",
+  "version": "1.0.0",
+  "description": "This project is dead, though I hope to eventually continue this project I discovered along the way that i2c communication is not going to work reliably enough for the length I hoped, I explored some ideas to do with USB serial communication and I believe this is the direction this should take, and should I pick this up again that is where I will start.",
+  "main": "server/src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fatlard1993/Medeina.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fatlard1993/Medeina/issues"
+  },
+  "homepage": "https://github.com/fatlard1993/Medeina#readme",
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.10.0"
+  },
+  "dependencies": {
+    "uuid": "^3.3.2",
+    "ws": "^6.1.2"
+  }
+}
