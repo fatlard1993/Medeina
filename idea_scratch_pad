@@ -69,6 +69,54 @@ Would probably still need to have someone takeover if the other goes down though
 Or, there could be slave brains that are weaker and more dedicated.
 
 
+It could be useful to have combo hubs for more simple islands
+
+
+Example sketch: "Home reptiles"
+
+Group "Home"
+	Group "Office"
+		sensors: temp_humidity
+		devices: heat
+
+		Group "Lara"
+			sensors: temp_humidity
+			devices: heat
+
+	Group "Living Room"
+		sensors: temp_humidity
+		devices: heat
+
+		Group "Lizzy And Hellboy"
+			sensors: lizzy_temp_humidity_top,
+				lizzy_temp_humidity_bottom,
+				hellboy_temp_humidity
+			devices: lizzy_heat_1,
+				lizzy_heat_2,
+				lizzy_light_top,
+				lizzy_light_bottom,
+				lizzy_humidifier,
+				hellboy_heat
+
+		Group "Rex"
+			sensors: temp_humidity_hotSide,
+				temp_humidity_coldSide
+			devices: heat_hotSide,
+				light
+
+		Group "Floki"
+			sensors: temp_humidity_hotSide,
+				temp_humidity_coldSide
+			devices: heat_hotSide,
+				light
+
+		Group "Maulie"
+			sensors: temp_humidity_hotSide,
+				temp_humidity_coldSide
+			devices: heat_hotSide,
+				light,
+				humidifier
+
 indoor:
 general
   nutrient vat
