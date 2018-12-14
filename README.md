@@ -90,11 +90,17 @@ A soil moisture probe, ~3 inch stake. Provides soil moisture level.
 ### Reservoir Level
 Provides reservoir level.
 
+### Reservoir Empty
+A manually set bobber. Provides full/empty.
+
 ### Flood
 A small flat sensor designed to detect if there is water on the floor. Provides flooded/not-flooded.
 
 ### Motion
 A PIR motion sensor. Provides motion trigger.
+
+### Tamper
+A mercury switch. Provides on/off.
 
 ### Door
 A magnetic door sensor. Provides open/closed.
