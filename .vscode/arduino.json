@@ -1,6 +1,6 @@
 {
     "board": "arduino:avr:nano",
     "configuration": "cpu=atmega328old",
-    "sketch": "arduino/test.ino",
+    "sketch": "arduino/firmata/firmata.ino",
     "port": "/dev/ttyUSB0"
 }

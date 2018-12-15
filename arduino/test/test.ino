@@ -30,10 +30,12 @@
 
 int tempCalibration = -5;
 int humidityCalibration = -10;
-int onTemp = 87;
-int offTemp = 90;
-int onTempNight = 70;
-int offTempNight = 75;
+int settingCalibration = 2;//currently to account for a lack of sensor detail on the cold side
+
+int onTemp = 87 + settingCalibration;
+int offTemp = 90 + settingCalibration;
+int onTempNight = 70 + settingCalibration;
+int offTempNight = 75 + settingCalibration;
 
 SimpleDHT11 dht11(sensor_temp_humidity);
 
