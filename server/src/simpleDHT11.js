@@ -1,14 +1,20 @@
 const eventEmitter = require('events');
 
 const j5 = require('johnny-five');
-const nanoTimer = require('nanotimer');
+// const nanoTimer = require('nanotimer');
+const temporal = require('temporal');
+
+temporal.resolution(0.1);
+
+temporal.on('idle', function() {
+	console.log('Temporal is idle');
+});
 
 class simpleDHT11 extends eventEmitter {
   constructor(pin){
 		super();
 
 		this.pin = new j5.Pin(pin);
-		this.signalTimer = new nanoTimer();
 	}
 
 	compileError(time, err){
@@ -60,12 +66,13 @@ class simpleDHT11 extends eventEmitter {
 		// - since they were not working (MCU-dependent timing?), replace in code with
 		//   _working_ values based on measurements done with signalTimePrecise()
 
-		const sampleTimer = new nanoTimer();
+		// const sampleTimer = new nanoTimer();
 
 		this.pin.mode = 1;//output
 		this.pin.write(0);// 1.
 
-		sampleTimer.setTimeout(() => {
+		temporal.delay(0.2, () => {// specs: 18us
+			console.log(0.2 +'ms later...');
 			// Pull high and set to input, before wait 40us.
 			// @see https://github.com/winlinvip/SimpleDHT/issues/4
 			// @see https://github.com/winlinvip/SimpleDHT/pull/5
@@ -73,7 +80,8 @@ class simpleDHT11 extends eventEmitter {
 			this.pin.write(1);// 2.
 			this.pin.mode = 0;// input
 
-			sampleTimer.setTimeout(() => {// todo is this one necessary?
+			temporal.delay(0.2, () => {// specs: 20-40us
+				console.log(0.2 +'ms later...');
 				// DHT11 starting:
 				//    1. PULL LOW 80us
 				//    2. PULL HIGH 80us
@@ -96,8 +104,42 @@ class simpleDHT11 extends eventEmitter {
 						});
 					});// 2.
 				});//1.
-			}, '', '25u');// specs: 20-40us
-		}, '', '20u');// specs: 18us
+			});
+		});
+
+		// sampleTimer.setTimeout(() => {
+		// 	// Pull high and set to input, before wait 40us.
+		// 	// @see https://github.com/winlinvip/SimpleDHT/issues/4
+		// 	// @see https://github.com/winlinvip/SimpleDHT/pull/5
+
+		// 	this.pin.write(1);// 2.
+		// 	this.pin.mode = 0;// input
+
+		// 	sampleTimer.setTimeout(() => {// todo is this one necessary?
+		// 		// DHT11 starting:
+		// 		//    1. PULL LOW 80us
+		// 		//    2. PULL HIGH 80us
+
+		// 		this.signalTime(0, (time) => {
+		// 			if(time < 30) return cb(this.compileError(time, this.errors.startLow));// specs: 80us
+
+		// 			this.signalTime(1, (time) => {
+		// 				if(time < 50) return cb(this.compileError(time, this.errors.startHigh));// specs: 80us
+
+		// 				this.poll((data) => {
+		// 					// DHT11 EOF:
+		// 					// PULL LOW 50us.
+
+		// 					this.signalTime(0, () => {
+		// 						if(time < 24) return cb(this.compileError(time, this.errors.dataEOF));// specs: 50us
+
+		// 						cb(this.errors.success.code, data);
+		// 					});
+		// 				});
+		// 			});// 2.
+		// 		});//1.
+		// 	}, '', '25u');// specs: 20-40us
+		// }, '', '20u');// specs: 18us
 	}
 
 	parse(data, cb){
@@ -138,38 +180,53 @@ class simpleDHT11 extends eventEmitter {
 		});
 	}
 
-	signalTime(signal, cb, firstWait = 10, intervalWait = 6){
+	signalTime(signal, cb, firstWait = 1, intervalWait = 0.1){
 		const time_start = this.getMicroTime();
-		let time = 0, isDone = false;
-
-		if(!isDone){
-			isDone = true;
-
-			this.respondSignalTime(cb, time);
-		}
+		let time = 0;
 
 		this.pin.read(function(error, value){
 			if(error) return console.error('Error reading signal: ', error);
 
 			console.log('Signal read: ', value);
 
-			if(value === signal) this.respondSignalTime(cb, time);
+			if(value === signal && cb){
+				cb(time);
+				cb = null;
+			}
 		});
 
-		this.signalTimer.setTimeout(() => {
-			time = this.getMicroTime() - time_start;
+		temporal.delay(firstWait, () => {
+			console.log(firstWait +'ms later...');
 
-			this.signalTimer.setInterval(() => {
+			temporal.loop(intervalWait, (loop) => {
+				console.log(`Every ${intervalWait}ms... #${loop.called}`);
 				time = this.getMicroTime() - time_start;
 
-				if(time < 0 || time > this.signalTimeout) this.respondSignalTime(cb, time);
-			}, '', intervalWait +'u');
-		}, '', firstWait +'u');
+				if(time < 0 || time > this.signalTimeout && cb){
+					cb(time);
+					cb = null;
+
+					loop.stop();
+				}
+			});
+		});
+
+		// this.signalTimer.setTimeout(() => {
+		// 	time = this.getMicroTime() - time_start;
+
+		// 	this.signalTimer.setInterval(() => {
+		// 		time = this.getMicroTime() - time_start;
+
+		// 		if(time < 0 || time > this.signalTimeout) this.respondSignalTime(cb, time);
+		// 	}, '', intervalWait +'u');
+		// }, '', firstWait +'u');
 	}
 
-	respondSignalTime(cb, time){
-		this.signalTimer.clearTimeout();
-		this.signalTimer.clearInterval();
+	respondSignalTime(interval, cb, time){
+		// this.signalTimer.clearTimeout();
+		// this.signalTimer.clearInterval();
+
+		if(interval) interval.stop();
 
 		cb(time);
 	}

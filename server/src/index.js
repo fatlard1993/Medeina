@@ -13,6 +13,7 @@ board.on('ready', function(){
 	const speaker = new j5.Piezo(3);
 	const motion = new j5.Motion(2);
 	const outlets = {
+		red: new j5.Relay(10),
 		grey: new j5.Relay(7),
 		brown: new j5.Relay(6),
 		blue: new j5.Relay(5),
