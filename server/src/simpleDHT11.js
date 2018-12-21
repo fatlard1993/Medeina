@@ -1,20 +1,40 @@
 const eventEmitter = require('events');
 
 const j5 = require('johnny-five');
-// const nanoTimer = require('nanotimer');
 const temporal = require('temporal');
+const now = require('performance-now');
 
-temporal.resolution(0.1);
+const DBG = 0;
 
-temporal.on('idle', function() {
-	console.log('Temporal is idle');
-});
+const nowCalibration = now() - now();
+console.log('Now calibration: ', nowCalibration);// ~ 0.002 on my system
+
+temporal.resolution(0.01);
 
 class simpleDHT11 extends eventEmitter {
   constructor(pin){
 		super();
 
 		this.pin = new j5.Pin(pin);
+
+		this.pin.read((error, value) => {
+			if(error) return console.error('Error reading signal: ', error);
+
+			if(DBG) console.log('Signal read: ', value);
+
+			if(value === this.signalSettings.seeking){
+				if(!this.signalSettings.onRead) return console.error('No signal function!', this.signalSettings.onRead);
+
+				temporal.clear();
+
+				this.signalSettings.onRead(this.signalSettings.timer);
+				this.signalSettings.onRead = null;
+				this.signalSettings.seeking = null;
+
+
+				console.log('Signal Time: ', this.signalSettings.timer);
+			}
+		});
 	}
 
 	compileError(time, err){
@@ -29,10 +49,22 @@ class simpleDHT11 extends eventEmitter {
 		return byte;
 	}
 
+	microToMilliseconds(microseconds){
+		return microseconds / 1e3;
+	}
+
 	getMicroTime(){
 		const hrTime = process.hrtime();
 
-		return hrTime[0] * 1000000 + hrTime[1] / 1000;
+		return hrTime[0] * 1e9 + hrTime[1];
+	}
+
+	sleep(reqTime){
+		var time = 0, timerStart = now();
+
+		while(time < reqTime) time = (now() + nowCalibration) - timerStart;
+
+		if(DBG) console.log(`Requested: ${reqTime} | Actual: ${time}`);
 	}
 
 	read(cb){
@@ -68,78 +100,63 @@ class simpleDHT11 extends eventEmitter {
 
 		// const sampleTimer = new nanoTimer();
 
-		this.pin.mode = 1;//output
+		this.pin.mode = 1;// output
+
 		this.pin.write(0);// 1.
 
-		temporal.delay(0.2, () => {// specs: 18us
-			console.log(0.2 +'ms later...');
-			// Pull high and set to input, before wait 40us.
-			// @see https://github.com/winlinvip/SimpleDHT/issues/4
-			// @see https://github.com/winlinvip/SimpleDHT/pull/5
+		// this.sleep(0.02);
 
-			this.pin.write(1);// 2.
-			this.pin.mode = 0;// input
+		this.pin.write(1);// 2.
 
-			temporal.delay(0.2, () => {// specs: 20-40us
-				console.log(0.2 +'ms later...');
-				// DHT11 starting:
-				//    1. PULL LOW 80us
-				//    2. PULL HIGH 80us
+		this.pin.mode = 0;// input
 
-				this.signalTime(0, (time) => {
-					if(time < 30) return cb(this.compileError(time, this.errors.startLow));// specs: 80us
+		// var thing = 1;
 
-					this.signalTime(1, (time) => {
-						if(time < 50) return cb(this.compileError(time, this.errors.startHigh));// specs: 80us
+		// while(thing){
+		// 	this.pin.mode = 1;//output
+		// 	this.pin.write(0);// 1.
 
-						this.poll((data) => {
-							// DHT11 EOF:
-							// PULL LOW 50us.
+			// this.sleep(100);
 
-							this.signalTime(0, () => {
-								if(time < 24) return cb(this.compileError(time, this.errors.dataEOF));// specs: 50us
+			// this.pin.write(1);// 2.
+			// this.pin.mode = 0;// input
 
-								cb(this.errors.success.code, data);
-							});
-						});
-					});// 2.
-				});//1.
-			});
-		});
+		// 	this.sleep(100);
+		// 	++thing;
+		// 	console.log(thing);
+		// }
 
-		// sampleTimer.setTimeout(() => {
-		// 	// Pull high and set to input, before wait 40us.
-		// 	// @see https://github.com/winlinvip/SimpleDHT/issues/4
-		// 	// @see https://github.com/winlinvip/SimpleDHT/pull/5
 
-		// 	this.pin.write(1);// 2.
-		// 	this.pin.mode = 0;// input
 
-		// 	sampleTimer.setTimeout(() => {// todo is this one necessary?
-		// 		// DHT11 starting:
-		// 		//    1. PULL LOW 80us
-		// 		//    2. PULL HIGH 80us
+		// Pull high and set to input, before wait 40us.
+		// @see https://github.com/winlinvip/SimpleDHT/issues/4
+		// @see https://github.com/winlinvip/SimpleDHT/pull/5
+		// DHT11 starting:
+		//    1. PULL LOW 80us
+		//    2. PULL HIGH 80us
 
-		// 		this.signalTime(0, (time) => {
-		// 			if(time < 30) return cb(this.compileError(time, this.errors.startLow));// specs: 80us
+		// this.signalTime(0, (time) => {// 1.
+		// 	if(time < 30) return cb(this.compileError(time, this.errors.startLow));// specs: 80us
 
-		// 			this.signalTime(1, (time) => {
-		// 				if(time < 50) return cb(this.compileError(time, this.errors.startHigh));// specs: 80us
+		// 	this.signalTime(1, (time) => {// 2.
+		// 		if(time < 50) return cb(this.compileError(time, this.errors.startHigh));// specs: 80us
 
-		// 				this.poll((data) => {
-		// 					// DHT11 EOF:
-		// 					// PULL LOW 50us.
+		// 		this.poll((data) => {
+		// 			// DHT11 EOF:
+		// 			// PULL LOW 50us.
 
-		// 					this.signalTime(0, () => {
-		// 						if(time < 24) return cb(this.compileError(time, this.errors.dataEOF));// specs: 50us
+		// 			this.signalTime(0, () => {
+		// 				if(time < 24) return cb(this.compileError(time, this.errors.dataEOF));// specs: 50us
 
-		// 						cb(this.errors.success.code, data);
-		// 					});
-		// 				});
-		// 			});// 2.
-		// 		});//1.
-		// 	}, '', '25u');// specs: 20-40us
-		// }, '', '20u');// specs: 18us
+		// 				cb(this.errors.success.code, data);
+		// 			});
+		// 		});
+		// 	});
+		// });
+
+		// temporal.delay(delay, () => {// specs: 18us
+
+		// });
 	}
 
 	parse(data, cb){
@@ -180,59 +197,27 @@ class simpleDHT11 extends eventEmitter {
 		});
 	}
 
-	signalTime(signal, cb, firstWait = 1, intervalWait = 0.1){
-		const time_start = this.getMicroTime();
-		let time = 0;
+	signalTime(signal, cb){
+		this.signalSettings.timerStart = now();
+		this.signalSettings.timer = 0;
+		this.signalSettings.seeking = signal;
+		this.signalSettings.onRead = cb;
 
-		this.pin.read(function(error, value){
-			if(error) return console.error('Error reading signal: ', error);
+		temporal.delay(this.signalTimeout, () => {
+			if(!this.signalSettings.onRead) return console.error('No signal function!', this.signalSettings.onRead);
 
-			console.log('Signal read: ', value);
+			this.signalSettings.onRead(this.signalSettings.timer);
+			this.signalSettings.onRead = null;
+			this.signalSettings.seeking = null;
 
-			if(value === signal && cb){
-				cb(time);
-				cb = null;
-			}
+			console.log('Signal Timeout: ', this.signalSettings.timer);
 		});
-
-		temporal.delay(firstWait, () => {
-			console.log(firstWait +'ms later...');
-
-			temporal.loop(intervalWait, (loop) => {
-				console.log(`Every ${intervalWait}ms... #${loop.called}`);
-				time = this.getMicroTime() - time_start;
-
-				if(time < 0 || time > this.signalTimeout && cb){
-					cb(time);
-					cb = null;
-
-					loop.stop();
-				}
-			});
-		});
-
-		// this.signalTimer.setTimeout(() => {
-		// 	time = this.getMicroTime() - time_start;
-
-		// 	this.signalTimer.setInterval(() => {
-		// 		time = this.getMicroTime() - time_start;
-
-		// 		if(time < 0 || time > this.signalTimeout) this.respondSignalTime(cb, time);
-		// 	}, '', intervalWait +'u');
-		// }, '', firstWait +'u');
-	}
-
-	respondSignalTime(interval, cb, time){
-		// this.signalTimer.clearTimeout();
-		// this.signalTimer.clearInterval();
-
-		if(interval) interval.stop();
-
-		cb(time);
 	}
 }
 
-simpleDHT11.prototype.signalTimeout = 500;
+simpleDHT11.prototype.signalSettings = {
+	timeout: 500
+};
 
 simpleDHT11.prototype.errors = {
 	success: {

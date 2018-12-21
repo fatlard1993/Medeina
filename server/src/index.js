@@ -1,10 +1,30 @@
 const j5 = require('johnny-five');
 const nanoTimer = require('nanotimer');
+const temporal = require('temporal');
 const simpleDHT11 = require('./simpleDHT11');
 
 const board = new j5.Board();
 
 const DBG = 0;
+
+// setTimeout(function(){
+// 	var actual = now() - temporaldAt - nowCalibration;
+
+// 	console.log(`Time: ${actual}`);
+// }, 1);
+
+// timer.setTimeout(function(){
+// 	var actual = now() - temporaldAt - nowCalibration;
+
+// 	console.log(`Time: ${actual}`);
+// }, '', '1n');
+
+// temporal.delay(1, function(){
+// 	var actual = now() - temporaldAt - nowCalibration;
+
+// 	console.log(`Time: ${actual}`);
+// });
+
 
 board.on('ready', function(){
 	const button = new j5.Button(13);
@@ -53,10 +73,6 @@ board.on('ready', function(){
 		}
 	};
 
-	temp_humidity.read((status, temperature, humidity) => {
-		console.log('read dht11: ', status, temperature, humidity);
-	});
-
 	board.repl.inject({
 		button,
 		outlets,
@@ -73,13 +89,13 @@ board.on('ready', function(){
   });
 
   motion.on('motionstart', function(){
-		console.log('motion start');
+		if(DBG) console.log('motion start');
 
 		fountain.run();
   });
 
   motion.on('motionend', function(){
-    console.log('motion end');
+    if(DBG) console.log('motion end');
   });
 
   button.on('down', function(){
@@ -107,10 +123,14 @@ board.on('ready', function(){
 		if(this.pressed === 1){
 			console.log('button pressed');
 
-			speaker.play('F4 F4');
+			speaker.play('F4');
 
-			outlets.blue.toggle();
-			outlets.grey.toggle();
+			temp_humidity.read((status, temperature, humidity) => {
+				console.log('read dht11: ', status, temperature, humidity);
+			});
+
+			// outlets.blue.toggle();
+			// outlets.grey.toggle();
 		}
 
 		this.pressed = 0;

@@ -14,17 +14,18 @@
 
 #define DBG false
 
-#define device_light_desk 11
-#define device_light 10
-#define device_heat 9
-#define device_amp 8
-
-#define device_12v_fan 7
-
 #define device_5v_alarm 3
 
-#define sensor_motion 6
-#define sensor_temp_humidity 12
+#define device_12v_fan 9
+
+#define device_fountian 10
+#define device_light 4
+#define device_light_desk 5
+#define device_heat 6
+#define device_amp 7
+
+#define sensor_motion 2
+#define sensor_temp_humidity 8
 
 #define sensor_analog_light A0
 

@@ -23,7 +23,10 @@
   "dependencies": {
     "johnny-five": "^1.0.0",
     "nanotimer": "^0.3.15",
+    "performance-now": "^2.1.0",
+    "serialport": "^7.1.1",
     "temporal": "^0.7.1",
+    "usb-detection": "^4.1.0",
     "uuid": "^3.3.2",
     "ws": "^6.1.2"
   }

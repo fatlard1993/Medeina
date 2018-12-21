@@ -7,8 +7,8 @@
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "Launch Program",
-			"program": "${workspaceFolder}/server/src/index.js"
+			"name": "Debug Medeina",
+			"program": "${workspaceFolder}/server/src/serialport.js"
 		}
 	]
 }

@@ -145,3 +145,8 @@ else if(this.val > this.high && Groups[this.groupName].mister.state){
 
 Groups[this.groupName].statusLED.status[this.name] = this.val < this.extraLow ? 'blue:blink' : 'green'
 ```
+
+
+## Notes
+
+Having a hard time getting the dht11 sensors working.. might consider doing something like [this](https://hackaday.com/2016/11/07/diy-i2c-devices-with-attiny85/)

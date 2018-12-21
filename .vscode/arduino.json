@@ -1,6 +1,7 @@
 {
     "board": "arduino:avr:nano",
     "configuration": "cpu=atmega328old",
-    "sketch": "arduino/firmata/firmata.ino",
-    "port": "/dev/ttyUSB0"
+    "sketch": "arduino/serialport/serialport.ino",
+    "port": "/dev/ttyUSB1",
+    "programmer": "AVRISP mkII"
 }
