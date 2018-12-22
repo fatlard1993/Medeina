@@ -49,12 +49,14 @@ void setup(){
   pinMode(device_light_desk, OUTPUT);
   pinMode(device_light, OUTPUT);
   pinMode(device_heat, OUTPUT);
+  pinMode(device_amp, OUTPUT);
   pinMode(device_12v_fan, OUTPUT);
   pinMode(device_5v_alarm, OUTPUT);
 
   digitalWrite(device_light_desk, LOW);
   digitalWrite(device_light, LOW);
   digitalWrite(device_heat, LOW);
+  digitalWrite(device_amp, LOW);
   digitalWrite(device_12v_fan, LOW);
   digitalWrite(device_5v_alarm, LOW);
 }
