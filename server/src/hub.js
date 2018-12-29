@@ -2,7 +2,7 @@ const uuid = require('uuid/v4');
 const EventEmitter = require('events');
 
 const Serialport = require('serialport');
-const Delimiter = require('@serialport/parser-delimiter');
+const Readline = require('@serialport/parser-readline');
 
 class Hub extends EventEmitter {
   constructor(path, close){
@@ -16,7 +16,10 @@ class Hub extends EventEmitter {
 			baudRate: 115200
 		});
 
-		this.parser = this.port.pipe(new Delimiter({ delimiter: '\n' }));
+		this.parser = new Readline();
+		this.port.pipe(this.parser);
+
+		// this.parser = this.port.pipe(new Delimiter({ delimiter: '\n' }));
 
 		this.parser.on('data', (data) => {
 			data = data.toString();
@@ -45,14 +48,14 @@ class Hub extends EventEmitter {
 }
 
 Hub.prototype.sendAndDrain = function(data, cb){
-	console.log('\nSending: ', data);
+	console.log('\nSending: ', `{${data}}`);
 
 	this.port.write(`{${data}}`);
 	this.port.drain(cb);
 };
 
 Hub.prototype.send = function(data){
-	console.log('\nSending: ', data);
+	console.log('\nSending: ', `{${data}}`);
 
 	this.port.write(`{${data}}`, function(err){
 		if(err) return console.log('Error on write: ', err.message);

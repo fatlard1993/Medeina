@@ -1,4 +1,3 @@
-const usb = require('usb-detection');
 const Serialport = require('serialport');
 
 const Hub = require('./hub');
@@ -26,16 +25,6 @@ function autoConnect(){
 	});
 }
 
-function start(){
-	usb.startMonitoring();
+autoConnect();
 
-	usb.on('add:6790', function(device){
-		if(DBG) console.log('\nUSB device addded: ', device);
-
-		autoConnect();
-	});
-
-	autoConnect();
-}
-
-start();
+setInterval(autoConnect, 2e3);
