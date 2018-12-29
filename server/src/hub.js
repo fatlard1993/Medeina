@@ -19,14 +19,22 @@ class Hub extends EventEmitter {
 		this.parser = new Readline();
 		this.port.pipe(this.parser);
 
-		// this.parser = this.port.pipe(new Delimiter({ delimiter: '\n' }));
-
 		this.parser.on('data', (data) => {
-			data = data.toString();
+			data = JSON.parse(data.toString());
 
 			console.log('\nReceived data:', data);
 
-			if(data === 'connected') this.send('connection_acknowledged');
+			if(data.connected){
+				console.log(`Connected to ${data.connected}`);
+
+				this.deviceId = data.connected;
+
+				this.send('request_capabilities');
+			}
+
+			else if(data.capabilities){
+				console.log(`Capabilities: ${data.capabilities}`);
+			}
 		});
 
 		this.port.on('error', (err) => {
