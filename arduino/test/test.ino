@@ -2,26 +2,46 @@
 
 #define DBG false
 
-String DEVICE_ID = "testDevice";
+#define sensor_light A0
+#define sensor_motion 11
+SimpleDHT11 sensor_temp_humidity(12);
 
-int dht1Pin = 2;
+#define light_update_frequency 5000
+#define temp_humidity_update_frequency 1500
 
-SimpleDHT11 dht1(dht1Pin);
+unsigned long temp_humidity_check_millis = 0;
+unsigned long light_check_millis = 0;
+
+#define out_alarm 3
+#define out_red 10
+#define out_green 9
+#define out_yellow 8
+#define out_orange 7
+#define out_brown 6
+#define out_grey 5
+#define out_blue 4
+#define out_purple 2
+
+String hub_id = "testDevice";
+
+bool motionState = false;
 
 const byte numChars = 32;
 char receivedChars[numChars];
-boolean newData = false;
+bool newData = false;
 
-boolean connected = false;
+bool connected = false;
 
-unsigned long previousMillis = 0;
+void send(String type, String payload){
+	Serial.println("{\"type\":\""+ type +"\",\"payload\":"+ payload +"}");
+}
 
-void send(String key, String value){
-	Serial.println("{\""+ key +"\":\""+ value +"\"}");
+void sendString(String type, String payload){
+	send(type, "\""+ payload +"\"");
 }
 
 void receive(){
-	static boolean recvInProgress = false;
+	static bool recvInProgress = false;
 	static byte ndx = 0;
 	char startMarker = '{';
 	char endMarker = '}';
@@ -55,31 +75,53 @@ void receive(){
 }
 
 void handleCommands(){
-	if(newData == true){
-		if(DBG) send("echo", String(receivedChars));
+	if(newData == false) return;
 
-		if(strcmp(receivedChars, "connection_request") == 0){
-			connected = true;
+	if(DBG) sendString("echo", String(receivedChars));
 
-			send("connected", DEVICE_ID);
-		}
+	if(strcmp(receivedChars, "connection_request") == 0){
+		send("things", "{\"light\":{\"type\":\"in\"},\"motion\":{\"type\":\"in\"},\"temp_humidity\":{\"type\":\"in\"}}");
+		send("things", "{\"red\":{\"type\":\"out\"},\"green\":{\"type\":\"out\"},\"yellow\":{\"type\":\"out\"},\"orange\":{\"type\":\"out\"}}");
+		send("things", "{\"brown\":{\"type\":\"out\"},\"grey\":{\"type\":\"out\"},\"blue\":{\"type\":\"out\"},\"purple\":{\"type\":\"out\"}}");
 
-		else if(strcmp(receivedChars, "request_capabilities") == 0){
-			send("capabilities", DEVICE_ID);
-		}
+		sendString("connected", hub_id);
 
-		newData = false;
+		connected = true;
 	}
+
+	else if(strcmp(receivedChars, "grey=off") == 0){
+		send("state", "{\"thing\":\"grey\",\"state\":\"off\"}");
+
+		digitalWrite(out_grey, HIGH);
+	}
+
+	else if(strcmp(receivedChars, "grey=on") == 0){
+		send("state", "{\"thing\":\"grey\",\"state\":\"on\"}");
+
+		digitalWrite(out_grey, LOW);
+	}
+
+	newData = false;
+}
+
+double fahrenheit(double celsius){
+  return 1.8 * celsius + 32;
 }
 
 void readDHT(){
+	unsigned long currentMillis = millis();
+
+	if(currentMillis - temp_humidity_check_millis <= temp_humidity_update_frequency) return;
+
+	temp_humidity_check_millis = currentMillis;
+
 	byte temperature = 0;
   byte humidity = 0;
 
   int err = SimpleDHTErrSuccess;
 
-  if((err = dht1.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess){
-    send("error", String(err));
+  if((err = sensor_temp_humidity.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess){
+    sendString("error", String(err));
 
     return;
   }
@@ -90,16 +132,46 @@ void readDHT(){
 	int tempF = fahrenheit(tempC);//((9 * tempC) / 5.0) + 32;
 	int humidityCal = (int)humidity + humidityCalibration;
 
-	send("temp", String(tempC));
-	send("humidity", String(humidityCal));
+	send("state", "{\"thing\":\"temp_humidity\",\"state\":{\"temp\":\""+ String(tempF) +"\",\"humidity\":\""+ String(humidityCal) +"\"}}");
 }
 
-double fahrenheit(double celsius){
-  return 1.8 * celsius + 32;
+void readLight(){
+	unsigned long currentMillis = millis();
+
+	if(currentMillis - light_check_millis <= light_update_frequency) return;
+
+	light_check_millis = currentMillis;
+
+	int lightLevel = analogRead(sensor_light) / 1024;
+
+	send("state", "{\"thing\":\"light\",\"state\":\""+ String(lightLevel) +"\"}");
+}
+
+void readMotion(){
+	bool motion = digitalRead(sensor_motion);
+
+	if(motion != motionState){
+		send("state", "{\"thing\":\"motion\",\"state\":\""+ String(motion) +"\"}");
+
+		motionState = motion;
+	}
 }
 
 void setup(){
   Serial.begin(115200);
+
+  pinMode(sensor_light, INPUT);
+  pinMode(sensor_motion, INPUT);
+
+  pinMode(out_alarm, OUTPUT);
+  pinMode(out_red, OUTPUT);
+  pinMode(out_green, OUTPUT);
+  pinMode(out_yellow, OUTPUT);
+  pinMode(out_orange, OUTPUT);
+  pinMode(out_brown, OUTPUT);
+  pinMode(out_grey, OUTPUT);
+  pinMode(out_blue, OUTPUT);
+  pinMode(out_purple, OUTPUT);
 }
 
 void loop(){
@@ -107,13 +179,11 @@ void loop(){
 
 	handleCommands();
 
-	if(connected){
-		unsigned long currentMillis = millis();
+	if(connected == false) return;
 
-		if(currentMillis - previousMillis >= 1500){
-			previousMillis = currentMillis;
+	readLight();
 
-			readDHT();
-		}
-	}
+	readDHT();
+
+	readMotion();
 }

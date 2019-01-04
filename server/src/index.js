@@ -28,3 +28,24 @@ function autoConnect(){
 autoConnect();
 
 setInterval(autoConnect, 2e3);
+
+
+var stdin = process.openStdin();
+
+stdin.addListener('data', function(data){
+	var cmd = data.toString().trim();
+
+	console.log(`CMD: ${cmd}`);
+
+	if(cmd === '1'){
+		openPorts[Object.keys(openPorts)[0]].send('grey=on');
+	}
+
+	else if(cmd === '0'){
+		openPorts[Object.keys(openPorts)[0]].send('grey=off');
+	}
+
+	else if(cmd === 't'){
+		console.log(openPorts[Object.keys(openPorts)[0]].things);
+	}
+});

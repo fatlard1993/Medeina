@@ -4,11 +4,14 @@ const EventEmitter = require('events');
 const Serialport = require('serialport');
 const Readline = require('@serialport/parser-readline');
 
+const DBG = process.env.DBG || 0;
+
 class Hub extends EventEmitter {
   constructor(path, close){
 		super();
 
 		this.id = uuid();
+		this.things = {};
 
 		console.log('\nConnecting to: ', path);
 
@@ -20,20 +23,34 @@ class Hub extends EventEmitter {
 		this.port.pipe(this.parser);
 
 		this.parser.on('data', (data) => {
+			if(DBG) console.log(data.toString());
+
 			data = JSON.parse(data.toString());
 
-			console.log('\nReceived data:', data);
+			if(DBG) console.log('\nReceived data:', data);
 
-			if(data.connected){
-				console.log(`Connected to ${data.connected}`);
+			if(data.type === 'connected'){
+				console.log(`Connected to ${data.payload}`);
 
-				this.deviceId = data.connected;
-
-				this.send('request_capabilities');
+				this.id = data.payload;
 			}
 
-			else if(data.capabilities){
-				console.log(`Capabilities: ${data.capabilities}`);
+			else if(data.type === 'things'){
+				if(DBG) console.log(`Things:`, data.payload);
+
+				Object.assign(this.things, data.payload);
+			}
+
+			else if(data.type === 'error'){
+				console.error(`Error:`, data.payload);
+			}
+
+			else if(data.type === 'state'){
+				if(DBG) console.log(`State:`, data.payload);
+
+				if(!this.things || !this.things[data.payload.thing]) return console.error(`Thing "${data.payload.thing}" doesn't exist`);
+
+				this.things[data.payload.thing].state = data.payload.state;
 			}
 		});
 
