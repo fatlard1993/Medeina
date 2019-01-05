@@ -89,6 +89,18 @@ void handleCommands(){
 		connected = true;
 	}
 
+	else if(strcmp(receivedChars, "yellow=off") == 0){
+		send("state", "{\"thing\":\"yellow\",\"state\":\"off\"}");
+
+		digitalWrite(out_yellow, HIGH);
+	}
+
+	else if(strcmp(receivedChars, "yellow=on") == 0){
+		send("state", "{\"thing\":\"yellow\",\"state\":\"on\"}");
+
+		digitalWrite(out_yellow, LOW);
+	}
+
 	else if(strcmp(receivedChars, "grey=off") == 0){
 		send("state", "{\"thing\":\"grey\",\"state\":\"off\"}");
 
@@ -99,6 +111,18 @@ void handleCommands(){
 		send("state", "{\"thing\":\"grey\",\"state\":\"on\"}");
 
 		digitalWrite(out_grey, LOW);
+	}
+
+	else if(strcmp(receivedChars, "blue=off") == 0){
+		send("state", "{\"thing\":\"blue\",\"state\":\"off\"}");
+
+		digitalWrite(out_blue, HIGH);
+	}
+
+	else if(strcmp(receivedChars, "blue=on") == 0){
+		send("state", "{\"thing\":\"blue\",\"state\":\"on\"}");
+
+		digitalWrite(out_blue, LOW);
 	}
 
 	newData = false;

@@ -6,6 +6,19 @@ const Readline = require('@serialport/parser-readline');
 
 const DBG = process.env.DBG || 0;
 
+function schedule(task, hour, min, daysAway){
+	var now = new Date();
+
+	// year, month (0-11), day, hour, min, sec, msec
+	var eta_ms = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (daysAway || 0), hour, min || 0).getTime() - now;
+
+	if(eta_ms < 0) eta_ms += 864e5; // same bat time tomorrow
+
+	console.log(`Task scheduled for ${eta_ms}ms in the future`);
+
+	return setTimeout(task, eta_ms);
+}
+
 class Hub extends EventEmitter {
   constructor(path, close){
 		super();
@@ -33,6 +46,8 @@ class Hub extends EventEmitter {
 				console.log(`Connected to ${data.payload}`);
 
 				this.id = data.payload;
+
+				this.upkeepLights();
 			}
 
 			else if(data.type === 'things'){
@@ -51,6 +66,18 @@ class Hub extends EventEmitter {
 				if(!this.things || !this.things[data.payload.thing]) return console.error(`Thing "${data.payload.thing}" doesn't exist`);
 
 				this.things[data.payload.thing].state = data.payload.state;
+
+				if(data.payload.thing === 'motion' && this.things.motion.state === '1'){
+					if(this.things.blue.state === 'off') this.send('blue=on');
+					if(this.things.grey.state === 'off') this.send('grey=on');
+
+					clearTimeout(this.deskLightTimeout);
+
+					this.deskLightTimeout = setTimeout(() => {
+						if(this.things.blue.state === 'on') this.send('blue=off');
+						if(this.things.grey.state === 'on') this.send('grey=off');
+					}, 15 * 60 * 1000);
+				}
 			}
 		});
 
@@ -87,6 +114,34 @@ Hub.prototype.send = function(data){
 
 		console.log('- message written - ', data);
 	});
+};
+
+Hub.prototype.upkeepLights = function(){
+	clearTimeout(this.lightOnSchedule);
+	clearTimeout(this.lightOffSchedule);
+
+	var now = new Date();
+
+	// year, month (0-11), day, hour, min, sec, msec
+	var eta_ms = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11).getTime() - now;
+
+	this.send(`yellow=${eta_ms > 0 ? 'on' : 'off'}`);
+
+	// lara's light requirements
+	// 14-10 in summer
+	// 12-12 in winter
+
+	this.lightOnSchedule = schedule(() => {
+		if(this.things.yellow.state === 'off') this.send('yellow=on');
+
+		this.upkeepLights();
+	}, 11);
+
+	this.lightOffSchedule = schedule(() => {
+		if(this.things.yellow.state === 'on') this.send('yellow=off');
+
+		this.upkeepLights();
+	}, 23);
 };
 
 module.exports = Hub;
