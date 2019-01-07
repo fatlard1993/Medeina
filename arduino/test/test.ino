@@ -80,9 +80,9 @@ void handleCommands(){
 	if(DBG) sendString("echo", String(receivedChars));
 
 	if(strcmp(receivedChars, "connection_request") == 0){
-		send("things", "{\"light\":{\"type\":\"in\"},\"motion\":{\"type\":\"in\"},\"temp_humidity\":{\"type\":\"in\"}}");
-		send("things", "{\"red\":{\"type\":\"out\"},\"green\":{\"type\":\"out\"},\"yellow\":{\"type\":\"out\"},\"orange\":{\"type\":\"out\"}}");
-		send("things", "{\"brown\":{\"type\":\"out\"},\"grey\":{\"type\":\"out\"},\"blue\":{\"type\":\"out\"},\"purple\":{\"type\":\"out\"}}");
+		send("things", "{\"light\":{\"type\":\"in\"},\"motion\":{\"type\":\"in\",\"state\":\"0\"},\"temp_humidity\":{\"type\":\"in\"}}");
+		send("things", "{\"red\":{\"type\":\"out\",\"state\":\"on\"},\"green\":{\"type\":\"out\",\"state\":\"on\"},\"yellow\":{\"type\":\"out\",\"state\":\"on\"},\"orange\":{\"type\":\"out\",\"state\":\"on\"}}");
+		send("things", "{\"brown\":{\"type\":\"out\",\"state\":\"on\"},\"grey\":{\"type\":\"out\",\"state\":\"on\"},\"blue\":{\"type\":\"out\",\"state\":\"on\"},\"purple\":{\"type\":\"out\",\"state\":\"on\"}}");
 
 		sendString("connected", hub_id);
 
@@ -99,6 +99,18 @@ void handleCommands(){
 		send("state", "{\"thing\":\"yellow\",\"state\":\"on\"}");
 
 		digitalWrite(out_yellow, LOW);
+	}
+
+	else if(strcmp(receivedChars, "brown=off") == 0){
+		send("state", "{\"thing\":\"brown\",\"state\":\"off\"}");
+
+		digitalWrite(out_brown, HIGH);
+	}
+
+	else if(strcmp(receivedChars, "brown=on") == 0){
+		send("state", "{\"thing\":\"brown\",\"state\":\"on\"}");
+
+		digitalWrite(out_brown, LOW);
 	}
 
 	else if(strcmp(receivedChars, "grey=off") == 0){
