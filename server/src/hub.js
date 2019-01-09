@@ -6,11 +6,11 @@ const Readline = require('@serialport/parser-readline');
 
 const DBG = process.env.DBG || 0;
 
-function schedule(task, hour, min, daysAway){
+function schedule(task, hour, min = 0, daysAway = 0){
 	var now = new Date();
 
-	// year, month (0-11), day, hour, min, sec, msec
-	var eta_ms = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (daysAway || 0), hour, min || 0).getTime() - now;
+	// year, month, day, hour, min, sec, msec
+	var eta_ms = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysAway, hour, min).getTime() - now;
 
 	if(eta_ms < 0){
 		eta_ms += 864e5; // same bat time tomorrow
@@ -18,9 +18,29 @@ function schedule(task, hour, min, daysAway){
 		task(true);
 	}
 
-	console.log(`Task scheduled for ${eta_ms}ms in the future`);
+	console.log(`Task scheduled for ${hour}:${min > 10 ? '' :'0'}${min} (${eta_ms}ms in the future)`);
 
 	return setTimeout(task, eta_ms);
+}
+
+function withinTimeWindow(minHours, maxHours){
+	var now = new Date().getHours();
+
+	return now < minHours && now > maxHours;
+}
+
+function scheduleReoccurring(task, minutes, hours = 0){
+	console.log(`Task scheduled for every${hours ? hours +' hours and' : ''} ${minutes} minutes in the future`);
+
+	return setInterval(task, (hours * 6e6) + (minutes * 6e4));
+}
+
+function sumArr(arr){
+	return arr.reduce((total, num) => { return total + num; });
+}
+
+function avgArr(arr){
+	return sumArr(arr) / arr.length;
 }
 
 class Hub extends EventEmitter {
@@ -45,6 +65,7 @@ class Hub extends EventEmitter {
 			try{
 				data = JSON.parse(data.toString());
 			}
+
 			catch(e){
 				console.error(data.toString(), e);
 
@@ -56,13 +77,20 @@ class Hub extends EventEmitter {
 			if(data.type === 'connected'){
 				console.log(`Connected to ${data.payload}`);
 
+				this.connectedTime = new Date();
 				this.id = data.payload;
 
-				this.upkeepLights();
+				if(!this.things.temp_humidity) return console.error('Error connecting!');
 
-				this.reportInterval = setInterval(() => {
-					console.log(`Report ${new Date().getHours()}: `, this.things);
-				}, 6e6);// every hour
+				this.things.temp_humidity.averageReadingCount = 6;
+				this.things.temp_humidity.tempCalibration = 3;
+				this.things.temp_humidity.humidityCalibration = -5;
+
+				this.chartTask = schedule(() => {
+					this.chartTask = scheduleReoccurring(() => { this.chart(this.things.temp_humidity, 'temp_humidity'); }, 10);
+				}, this.connectedTime.getHours(), Math.ceil(this.connectedTime.getMinutes() / 10) * 10);
+
+				this.upkeepLights();
 			}
 
 			else if(data.type === 'things'){
@@ -103,50 +131,43 @@ class Hub extends EventEmitter {
 					// 87-90 temp high side
 					// 74-80 temp low side
 					// 70-75 temp night
-					// 30-40% humid
+					// 30-40% humidity
 
-					this.things[data.payload.thing].tempReadings = this.things[data.payload.thing].tempReadings || [];
-					this.things[data.payload.thing].humidityReadings = this.things[data.payload.thing].humidityReadings || [];
+					this.things.temp_humidity.tempReadings = this.things.temp_humidity.tempReadings || [];
+					this.things.temp_humidity.humidityReadings = this.things.temp_humidity.humidityReadings || [];
 
-					this.things[data.payload.thing].tempReadings.push(parseInt(data.payload.state.temp));
-					this.things[data.payload.thing].humidityReadings.push(parseInt(data.payload.state.humidity));
+					this.things.temp_humidity.tempReadings.push(parseInt(data.payload.state.temp));
+					this.things.temp_humidity.humidityReadings.push(parseInt(data.payload.state.humidity));
 
-					var tempCalibration = 4;
-					var humidityCalibration = -1;
+					if(this.things.temp_humidity.tempReadings.length === this.things.temp_humidity.averageReadingCount){
+						this.things.temp_humidity.averageTemp = parseInt(avgArr(this.things.temp_humidity.tempReadings) + this.things.temp_humidity.tempCalibration);
 
-					if(this.things[data.payload.thing].tempReadings.length === 5){
-						var tempReadingSum = this.things[data.payload.thing].tempReadings.reduce((total, num) => { return total + num; });
+						this.things.temp_humidity.tempReadings = [];
 
-						this.things[data.payload.thing].averageTemp = (tempReadingSum / 5) + tempCalibration;
+						if(DBG) console.log('Temp: ', this.things.temp_humidity.averageTemp);
 
-						if(DBG) console.log('Temp: ', tempReadingSum, this.things[data.payload.thing].averageTemp);
-
-						this.things[data.payload.thing].tempReadings = [];
-
-						if(this.things[data.payload.thing].averageTemp > 90){
+						if(this.things.temp_humidity.averageTemp > 90){
 							if(this.things.brown.state === 'on') this.send('brown=off');
 						}
 
-						else if(this.things[data.payload.thing].averageTemp < 87){
+						else if(this.things.temp_humidity.averageTemp < 87){
 							if(this.things.brown.state === 'off') this.send('brown=on');
 						}
 					}
 
-					if(this.things[data.payload.thing].humidityReadings.length === 5){
-						var humidityReadingSum = this.things[data.payload.thing].humidityReadings.reduce((total, num) => { return total + num; });
+					if(this.things.temp_humidity.humidityReadings.length === this.things.temp_humidity.averageReadingCount){
+						this.things.temp_humidity.averageHumidity = parseInt(avgArr(this.things.temp_humidity.humidityReadings) + this.things.temp_humidity.humidityCalibration);
 
-						this.things[data.payload.thing].averageHumidity = (humidityReadingSum / 5) + humidityCalibration;
+						this.things.temp_humidity.humidityReadings = [];
 
-						this.things[data.payload.thing].humidityReadings = [];
+						if(DBG) console.log('Humidity: ', this.things.temp_humidity.averageHumidity);
 
-						if(DBG) console.log('Humidity: ', tempReadingSum, this.things[data.payload.thing].averageHumidity);
-
-						if(this.things[data.payload.thing].averageHumidity > 40){
-							console.log(`Humidity is high - ${this.things[data.payload.thing].averageHumidity}%`);
+						if(this.things.temp_humidity.averageHumidity > 40){
+							console.log(`Humidity is high - ${this.things.temp_humidity.averageHumidity}%`);
 						}
 
-						else if(this.things[data.payload.thing].averageHumidity < 30){
-							console.log(`Humidity is low - ${this.things[data.payload.thing].averageHumidity}%`);
+						else if(this.things.temp_humidity.averageHumidity < 30){
+							if(DBG) console.log(`Humidity is low - ${this.things.temp_humidity.averageHumidity}%`);
 						}
 					}
 				}
@@ -172,20 +193,44 @@ class Hub extends EventEmitter {
 }
 
 Hub.prototype.sendAndDrain = function(data, cb){
-	console.log('\nSending: ', `{${data}}`);
+	if(DBG) console.log('\nSending: ', `{${data}}`);
 
 	this.port.write(`{${data}}`);
 	this.port.drain(cb);
 };
 
 Hub.prototype.send = function(data){
-	console.log('\nSending: ', `{${data}}`);
+	if(DBG) console.log('\nSending: ', `{${data}}`);
 
 	this.port.write(`{${data}}`, function(err){
 		if(err) return console.log('Error on write: ', err.message);
 
-		console.log('- message written - ', data);
+		if(DBG) console.log('- message written - ', data);
 	});
+};
+
+Hub.prototype.chart = function(thing, type){
+	var readingTime = new Date();
+	var chartHour = readingTime.getHours();
+	var chartTime = readingTime.getMinutes();
+
+	thing.charts = thing.charts || {};
+	thing.charts[chartHour] = thing.charts[chartHour] || (type === 'temp_humidity' ? { times: [], tempReadings: [], humidityReadings: [] } : { times: [], readings: [] });
+
+	if(!type){
+		if(thing.charts[chartHour].readings[thing.charts[chartHour].readings.length - 1] === thing.state) return;
+
+		thing.charts[chartHour].readings.push(thing.state);
+
+		thing.charts[chartHour].times.push(chartTime);
+	}
+
+	else if(!(thing.charts[chartHour].tempReadings[thing.charts[chartHour].tempReadings.length - 1] === thing.averageTemp && thing.charts[chartHour].humidityReadings[thing.charts[chartHour].humidityReadings.length - 1] === thing.averageHumidity)){
+		thing.charts[chartHour].tempReadings.push(thing.averageTemp);
+		thing.charts[chartHour].humidityReadings.push(thing.averageHumidity);
+
+		thing.charts[chartHour].times.push(chartTime);
+	}
 };
 
 Hub.prototype.upkeepLights = function(){

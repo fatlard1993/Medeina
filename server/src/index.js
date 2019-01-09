@@ -1,3 +1,4 @@
+const util = require('util');
 const Serialport = require('serialport');
 
 const Hub = require('./hub');
@@ -46,6 +47,10 @@ stdin.addListener('data', function(data){
 	}
 
 	else if(cmd === 't'){
-		console.log(openPorts[Object.keys(openPorts)[0]].things);
+		console.log(util.inspect(openPorts[Object.keys(openPorts)[0]].things, { depth: Infinity }));
+	}
+
+	else if(cmd === 'c'){
+		console.log(util.inspect(openPorts[Object.keys(openPorts)[0]].charts, { depth: Infinity }));
 	}
 });
