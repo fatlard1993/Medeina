@@ -4,10 +4,11 @@
 
 #define sensor_light A0
 #define sensor_motion 11
+#define sensor_button 13
 SimpleDHT11 sensor_temp_humidity(12);
 
-#define light_update_frequency 5000
-#define temp_humidity_update_frequency 1500
+#define light_update_frequency 2000
+#define temp_humidity_update_frequency 3000
 
 unsigned long temp_humidity_check_millis = 0;
 unsigned long light_check_millis = 0;
@@ -24,6 +25,11 @@ unsigned long light_check_millis = 0;
 
 String hub_id = "testDevice";
 
+int buttonState;
+int lastButtonState = LOW;
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 50;
+
 bool motionState = false;
 
 const byte numChars = 32;
@@ -33,7 +39,7 @@ bool newData = false;
 bool connected = false;
 
 void send(String type, String payload){
-	Serial.println("{\"type\":\""+ type +"\",\"payload\":"+ payload +"}");
+	Serial.print("{\"type\":\""+ type +"\",\"payload\":"+ payload +"}\n");
 }
 
 void sendString(String type, String payload){
@@ -80,7 +86,7 @@ void handleCommands(){
 	if(DBG) sendString("echo", String(receivedChars));
 
 	if(strcmp(receivedChars, "connection_request") == 0){
-		send("things", "{\"light\":{\"type\":\"in\"},\"motion\":{\"type\":\"in\",\"state\":\"0\"},\"temp_humidity\":{\"type\":\"in\"}}");
+		send("things", "{\"light\":{\"type\":\"in\"},\"button\":{\"type\":\"in\",\"state\":\"0\"},\"motion\":{\"type\":\"in\",\"state\":\"0\"},\"temp_humidity\":{\"type\":\"in\"}}");
 		send("things", "{\"red\":{\"type\":\"out\",\"state\":\"on\"},\"green\":{\"type\":\"out\",\"state\":\"on\"},\"yellow\":{\"type\":\"out\",\"state\":\"on\"},\"orange\":{\"type\":\"out\",\"state\":\"on\"}}");
 		send("things", "{\"brown\":{\"type\":\"out\",\"state\":\"on\"},\"grey\":{\"type\":\"out\",\"state\":\"on\"},\"blue\":{\"type\":\"out\",\"state\":\"on\"},\"purple\":{\"type\":\"out\",\"state\":\"on\"}}");
 
@@ -178,7 +184,7 @@ void readLight(){
 
 	light_check_millis = currentMillis;
 
-	int lightLevel = analogRead(sensor_light) / 1024;
+	int lightLevel = analogRead(sensor_light);
 
 	send("state", "{\"thing\":\"light\",\"state\":\""+ String(lightLevel) +"\"}");
 }
@@ -193,10 +199,29 @@ void readMotion(){
 	}
 }
 
+void readButton(){
+	int reading = digitalRead(sensor_button);
+
+  if(reading != lastButtonState){
+    lastDebounceTime = millis();
+  }
+
+  if((millis() - lastDebounceTime) > debounceDelay){
+    if(reading != buttonState){
+      buttonState = reading;
+
+			send("state", "{\"thing\":\"button\",\"state\":\""+ String(buttonState) +"\"}");
+    }
+  }
+
+  lastButtonState = reading;
+}
+
 void setup(){
   Serial.begin(115200);
 
   pinMode(sensor_light, INPUT);
+  pinMode(sensor_button, INPUT);
   pinMode(sensor_motion, INPUT);
 
   pinMode(out_alarm, OUTPUT);
@@ -216,6 +241,8 @@ void loop(){
 	handleCommands();
 
 	if(connected == false) return;
+
+	readButton();
 
 	readLight();
 
