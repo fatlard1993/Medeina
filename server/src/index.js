@@ -3,6 +3,8 @@ const Serialport = require('serialport');
 
 const Hub = require('./hub');
 
+const stdin = process.openStdin();
+
 const openPorts = {};
 const DBG = 0;
 
@@ -30,27 +32,20 @@ autoConnect();
 
 setInterval(autoConnect, 2e3);
 
-
-var stdin = process.openStdin();
-
 stdin.addListener('data', function(data){
 	var cmd = data.toString().trim();
 
 	console.log(`CMD: ${cmd}`);
 
-	if(cmd === '1'){
-		openPorts[Object.keys(openPorts)[0]].send('grey=on');
-	}
-
-	else if(cmd === '0'){
-		openPorts[Object.keys(openPorts)[0]].send('grey=off');
+	if(cmd.startsWith('send')){
+		openPorts[Object.keys(openPorts)[0]].send(cmd.replace('send', '{') +'}');
 	}
 
 	else if(cmd === 't'){
 		console.log(util.inspect(openPorts[Object.keys(openPorts)[0]].things, { depth: Infinity }));
 	}
 
-	else if(cmd === 'c'){
-		console.log(util.inspect(openPorts[Object.keys(openPorts)[0]].charts, { depth: Infinity }));
+	else if(cmd === 's'){
+		console.log(util.inspect(openPorts[Object.keys(openPorts)[0]].settings, { depth: Infinity }));
 	}
 });
