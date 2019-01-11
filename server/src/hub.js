@@ -41,7 +41,7 @@ function gradientUnit(unit, unitScale, refMin, refMax, outMin, outMax){
 	var unitsPerOutput = (outMax - outMin) / unitScale;
 
 	if(unit >= refMax) return outMax - ((unit - refMax) * unitsPerOutput);
-	else return outMin + ((refMin - unit) * unitsPerOutput);
+	else return outMin + ((unit - refMin) * unitsPerOutput);
 }
 
 function scheduleReoccurring(task, minutes, hours = 0){
