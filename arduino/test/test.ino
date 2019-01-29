@@ -3,34 +3,50 @@
 #define DBG false
 
 #define sensor_light A0
-#define sensor_motion 11
-#define sensor_button 13
-SimpleDHT11 sensor_temp_humidity(12);
+#define sensor_motion A1
+#define sensor_button A3
+#define sensor_temp_humidity_office 10
+#define sensor_temp_humidity_lara_cool_side 11
+#define sensor_temp_humidity_lara_hot_side 12
 
-#define light_update_frequency 2000
-#define temp_humidity_update_frequency 3000
-
-unsigned long temp_humidity_check_millis = 0;
-unsigned long light_check_millis = 0;
-
+#define out_fan 2
 #define out_alarm 3
-#define out_red 10
+#define out_red 13
 #define out_green 9
 #define out_yellow 8
 #define out_orange 7
 #define out_brown 6
 #define out_grey 5
 #define out_blue 4
-#define out_purple 2
+// #define out_purple 2
 
-String hub_id = "testDevice";
+#define light_update_frequency 2000
+#define temp_humidity_update_frequency 3000
+#define debounce_delay 50
 
-int buttonState;
-int lastButtonState = LOW;
-unsigned long lastDebounceTime = 0;
-unsigned long debounceDelay = 50;
+String hub_name = "hub1";
 
-bool motionState = false;
+SimpleDHT11 DHT11_temp_humidity_office(sensor_temp_humidity_office);
+SimpleDHT11 DHT11_temp_humidity_lara_cool_side(sensor_temp_humidity_lara_cool_side);
+SimpleDHT11 DHT11_temp_humidity_lara_hot_side(sensor_temp_humidity_lara_hot_side);
+
+byte temp_office_state = 0;
+byte humidity_office_state = 0;
+byte temp_lara_cool_side_state = 0;
+byte humidity_lara_cool_side_state = 0;
+byte temp_lara_hot_side_state = 0;
+byte humidity_lara_hot_side_state = 0;
+
+unsigned long temp_humidity_check_millis = 0;
+unsigned long light_check_millis = 0;
+
+bool button_state;
+bool last_button_state = false;
+unsigned long last_debounce_time = 0;
+
+bool motion_state = false;
+
+int light_level = 0;
 
 const byte numChars = 32;
 char receivedChars[numChars];
@@ -39,7 +55,7 @@ bool newData = false;
 bool connected = false;
 
 void send(String type, String payload){
-	Serial.print("{\"type\":\""+ type +"\",\"payload\":"+ payload +"}\n");
+	Serial.print("{\""+ type +"\":"+ payload +"}\n");
 }
 
 void sendString(String type, String payload){
@@ -80,74 +96,166 @@ void receive(){
 	}
 }
 
+void send_light(){
+	send("light", String(light_level));
+}
+
+void send_button(){
+	send("button", String(button_state));
+}
+
+void send_motion(){
+	send("motion", String(motion_state));
+}
+
+void send_temp_humidity_office(){
+	send("temp_office", String(temp_office_state));
+	send("humidity_office", String(humidity_office_state));
+}
+
+void send_temp_humidity_lara_cool_side(){
+	send("temp_lara_cool_side", String(temp_lara_cool_side_state));
+	send("humidity_lara_cool_side", String(humidity_lara_cool_side_state));
+}
+
+void send_temp_humidity_lara_hot_side(){
+	send("temp_lara_hot_side", String(temp_lara_hot_side_state));
+	send("humidity_lara_hot_side", String(humidity_lara_hot_side_state));
+}
+
+void send_yellow(){
+	bool state = digitalRead(out_yellow);
+
+	send("yellow", String(!state));
+}
+
+void send_blue(){
+	bool state = digitalRead(out_blue);
+
+	send("blue", String(!state));
+}
+
+void send_brown(){
+	bool state = digitalRead(out_brown);
+
+	send("brown", String(!state));
+}
+
+void send_green(){
+	bool state = digitalRead(out_green);
+
+	send("green", String(!state));
+}
+
+void send_fan(){
+	bool state = digitalRead(out_fan);
+
+	send("fan", String(state));
+}
+
+void sendStates(){
+	send_temp_humidity_office();
+	send_temp_humidity_lara_cool_side();
+	send_temp_humidity_lara_hot_side();
+	send_motion();
+	send_button();
+	send_light();
+	send_yellow();
+	send_blue();
+	send_brown();
+	send_green();
+	send_fan();
+}
+
 void handleCommands(){
 	if(newData == false) return;
 
 	if(DBG) sendString("echo", String(receivedChars));
 
 	if(strcmp(receivedChars, "connection_request") == 0){
-		send("things", "{\"light\":{\"type\":\"in\"},\"button\":{\"type\":\"in\",\"state\":\"0\"},\"motion\":{\"type\":\"in\",\"state\":\"0\"},\"temp_humidity\":{\"type\":\"in\"}}");
-		send("things", "{\"red\":{\"type\":\"out\",\"state\":\"on\"},\"green\":{\"type\":\"out\",\"state\":\"on\"},\"yellow\":{\"type\":\"out\",\"state\":\"on\"},\"orange\":{\"type\":\"out\",\"state\":\"on\"}}");
-		send("things", "{\"brown\":{\"type\":\"out\",\"state\":\"on\"},\"grey\":{\"type\":\"out\",\"state\":\"on\"},\"blue\":{\"type\":\"out\",\"state\":\"on\"},\"purple\":{\"type\":\"out\",\"state\":\"on\"}}");
+		// maybe these names should be more simple on the arduino side .. like just the pin definitions? Or even indexes in an array.
+		send("things", "{\"light\":\"in\",\"button\":\"in\",\"motion\":\"in\"}");
+		send("things", "{\"temp_office\":\"in\",\"humidity_office\":\"in\"}");
+		send("things", "{\"temp_lara_cool_side\":\"in\",\"humidity_lara_cool_side\":\"in\"}");
+		send("things", "{\"temp_lara_hot_side\":\"in\",\"humidity_lara_hot_side\":\"in\"}");
+		send("things", "{\"fan\":\"out\"}");
+		send("things", "{\"yellow\":\"out\",\"brown\":\"out\",\"blue\":\"out\"}");
+		send("things", "{\"green\":\"out\"}");
+		// send("things", "{\"purple\":\"out\"}");
+		// send("things", "{\"red\":\"out\",\"grey\":\"out\",\"orange\":\"out\"}");
 
-		sendString("connected", hub_id);
+		sendString("connected", hub_name);
+
+		sendStates();
 
 		connected = true;
 	}
 
-	else if(strcmp(receivedChars, "yellow=off") == 0){
-		send("state", "{\"thing\":\"yellow\",\"state\":\"off\"}");
+	else if(strcmp(receivedChars, "getStates") == 0){
+		sendStates();
+	}
 
+	else if(strcmp(receivedChars, "yellow 0") == 0){
 		digitalWrite(out_yellow, HIGH);
+
+		send_yellow();
 	}
 
-	else if(strcmp(receivedChars, "yellow=on") == 0){
-		send("state", "{\"thing\":\"yellow\",\"state\":\"on\"}");
-
+	else if(strcmp(receivedChars, "yellow 1") == 0){
 		digitalWrite(out_yellow, LOW);
+
+		send_yellow();
 	}
 
-	else if(strcmp(receivedChars, "brown=off") == 0){
-		send("state", "{\"thing\":\"brown\",\"state\":\"off\"}");
-
-		digitalWrite(out_brown, HIGH);
-	}
-
-	else if(strcmp(receivedChars, "brown=on") == 0){
-		send("state", "{\"thing\":\"brown\",\"state\":\"on\"}");
-
-		digitalWrite(out_brown, LOW);
-	}
-
-	else if(strcmp(receivedChars, "grey=off") == 0){
-		send("state", "{\"thing\":\"grey\",\"state\":\"off\"}");
-
-		digitalWrite(out_grey, HIGH);
-	}
-
-	else if(strcmp(receivedChars, "grey=on") == 0){
-		send("state", "{\"thing\":\"grey\",\"state\":\"on\"}");
-
-		digitalWrite(out_grey, LOW);
-	}
-
-	else if(strcmp(receivedChars, "blue=off") == 0){
-		send("state", "{\"thing\":\"blue\",\"state\":\"off\"}");
-
+	else if(strcmp(receivedChars, "blue 0") == 0){
 		digitalWrite(out_blue, HIGH);
+
+		send_blue();
 	}
 
-	else if(strcmp(receivedChars, "blue=on") == 0){
-		send("state", "{\"thing\":\"blue\",\"state\":\"on\"}");
-
+	else if(strcmp(receivedChars, "blue 1") == 0){
 		digitalWrite(out_blue, LOW);
+
+		send_blue();
+	}
+
+	else if(strcmp(receivedChars, "brown 0") == 0){
+		digitalWrite(out_brown, HIGH);
+
+		send_brown();
+	}
+
+	else if(strcmp(receivedChars, "brown 1") == 0){
+		digitalWrite(out_brown, LOW);
+
+		send_brown();
+	}
+
+	else if(strcmp(receivedChars, "green 0") == 0){
+		digitalWrite(out_green, HIGH);
+
+		send_green();
+	}
+
+	else if(strcmp(receivedChars, "green 1") == 0){
+		digitalWrite(out_green, LOW);
+
+		send_green();
+	}
+
+	else if(strcmp(receivedChars, "fan 0") == 0){
+		digitalWrite(out_fan, LOW);
+
+		send_fan();
+	}
+
+	else if(strcmp(receivedChars, "fan 1") == 0){
+		digitalWrite(out_fan, HIGH);
+
+		send_fan();
 	}
 
 	newData = false;
-}
-
-double fahrenheit(double celsius){
-  return 1.8 * celsius + 32;
 }
 
 void readDHT(){
@@ -157,24 +265,45 @@ void readDHT(){
 
 	temp_humidity_check_millis = currentMillis;
 
-	byte temperature = 0;
-  byte humidity = 0;
+	readDHT_office();
+	readDHT_lara_cool_side();
+	readDHT_lara_hot_side();
+}
 
+void readDHT_office(){
   int err = SimpleDHTErrSuccess;
 
-  if((err = sensor_temp_humidity.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess){
+  if((err = DHT11_temp_humidity_office.read(&temp_office_state, &humidity_office_state, NULL)) != SimpleDHTErrSuccess){
     sendString("error", String(err));
 
     return;
   }
 
-	int tempCalibration = 0;//-5;
-	int humidityCalibration = 0;//-10;
-  int tempC = (double)temperature + tempCalibration;
-	int tempF = fahrenheit(tempC);//((9 * tempC) / 5.0) + 32;
-	int humidityCal = (int)humidity + humidityCalibration;
+	send_temp_humidity_office();
+}
 
-	send("state", "{\"thing\":\"temp_humidity\",\"state\":{\"temp\":\""+ String(tempF) +"\",\"humidity\":\""+ String(humidityCal) +"\"}}");
+void readDHT_lara_cool_side(){
+  int err = SimpleDHTErrSuccess;
+
+  if((err = DHT11_temp_humidity_lara_cool_side.read(&temp_lara_cool_side_state, &humidity_lara_cool_side_state, NULL)) != SimpleDHTErrSuccess){
+    sendString("error", String(err));
+
+    return;
+  }
+
+	send_temp_humidity_lara_cool_side();
+}
+
+void readDHT_lara_hot_side(){
+  int err = SimpleDHTErrSuccess;
+
+  if((err = DHT11_temp_humidity_lara_hot_side.read(&temp_lara_hot_side_state, &humidity_lara_hot_side_state, NULL)) != SimpleDHTErrSuccess){
+    sendString("error", String(err));
+
+    return;
+  }
+
+	send_temp_humidity_lara_hot_side();
 }
 
 void readLight(){
@@ -184,37 +313,33 @@ void readLight(){
 
 	light_check_millis = currentMillis;
 
-	int lightLevel = analogRead(sensor_light);
+	light_level = analogRead(sensor_light);
 
-	send("state", "{\"thing\":\"light\",\"state\":\""+ String(lightLevel) +"\"}");
+	send_light();
 }
 
 void readMotion(){
-	bool motion = digitalRead(sensor_motion);
+	bool reading = digitalRead(sensor_motion);
 
-	if(motion != motionState){
-		send("state", "{\"thing\":\"motion\",\"state\":\""+ String(motion) +"\"}");
+	if(reading != motion_state){
+		motion_state = reading;
 
-		motionState = motion;
+		send_motion();
 	}
 }
 
 void readButton(){
-	int reading = digitalRead(sensor_button);
+	bool reading = digitalRead(sensor_button);
 
-  if(reading != lastButtonState){
-    lastDebounceTime = millis();
+  if(reading != last_button_state) last_debounce_time = millis();
+
+  if(millis() - last_debounce_time > debounce_delay && reading != button_state){
+		button_state = reading;
+
+		send_button();
   }
 
-  if((millis() - lastDebounceTime) > debounceDelay){
-    if(reading != buttonState){
-      buttonState = reading;
-
-			send("state", "{\"thing\":\"button\",\"state\":\""+ String(buttonState) +"\"}");
-    }
-  }
-
-  lastButtonState = reading;
+  last_button_state = reading;
 }
 
 void setup(){
@@ -224,6 +349,7 @@ void setup(){
   pinMode(sensor_button, INPUT);
   pinMode(sensor_motion, INPUT);
 
+  pinMode(out_fan, OUTPUT);
   pinMode(out_alarm, OUTPUT);
   pinMode(out_red, OUTPUT);
   pinMode(out_green, OUTPUT);
@@ -232,7 +358,7 @@ void setup(){
   pinMode(out_brown, OUTPUT);
   pinMode(out_grey, OUTPUT);
   pinMode(out_blue, OUTPUT);
-  pinMode(out_purple, OUTPUT);
+  // pinMode(out_purple, OUTPUT);
 }
 
 void loop(){
