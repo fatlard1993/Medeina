@@ -36,6 +36,8 @@ class Slave extends EventEmitter {
 	}
 
 	connect(path){
+		//todo add a connection timeout (disconnect after Xms if not connected)
+
 		if(this.hubs[path]) return;
 
 		this.hubs[path] = new Hub(path, this.settings);

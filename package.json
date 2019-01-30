@@ -21,8 +21,14 @@
     "eslint": "^5.10.0"
   },
   "dependencies": {
+    "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.3",
+    "gulp": "^4.0.0",
+    "node-sass": "^4.11.0",
     "performance-now": "^2.1.0",
+    "polka": "^0.5.1",
     "serialport": "^7.1.1",
+    "serve-static": "^1.13.2",
     "uuid": "^3.3.2",
     "ws": "^6.1.2"
   }

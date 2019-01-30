@@ -1,3 +1,8 @@
+const PORT = process.env.PORT || 8080;
+
+const server = require('./httpServer').init(PORT);
+// const socketServer = new SocketServer({ server });
+
 const Slave = require('./slave');
 
 const stdin = process.openStdin();

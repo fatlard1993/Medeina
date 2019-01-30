@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const log = require('../commonJs/log');
 
@@ -104,7 +105,7 @@ const fsExtended = module.exports = {
 	},
 	getFileHash: function(src, done){
 		var fileData = fs.createReadStream(src);
-		var hash = Crypto.createHash('sha1');
+		var hash = crypto.createHash('sha1');
 
 		hash.setEncoding('hex');
 
@@ -123,5 +124,8 @@ const fsExtended = module.exports = {
 		});
 
 		fileData.pipe(hash);
+	},
+	checksum: function(text){
+		return text ? crypto.createHash('sha1').update(text, 'utf8').digest('hex') : 'error';
 	}
 };
