@@ -1,8 +1,8 @@
 var dom = {
-	changeLocation: function changeLocation(newLocation){
+	changeLocation: function(newLocation){
 		window.location = window.location.protocol +'//'+ window.location.hostname +':'+ (window.location.port || 80) + newLocation;
 	},
-	localStorage: (function(){
+	localStorage: (function initLocalStorage(){
 		var uid = new Date(), storage, result;
 
 		try{
@@ -30,7 +30,7 @@ var dom = {
 			return dom.localStorage ? dom.localStorage.removeItem(prop) : dom.cookie.delete(prop);
 		}
 	},
-	createElem: function createElem(node, settingsObj){
+	createElem: function(node, settingsObj){
 		var elem = document.createElement(node);
 
 		if(settingsObj){
@@ -66,34 +66,34 @@ var dom = {
 			elem.appendChild(arguments[x]);
 		}
 	},
-	appendTo: function prependChild(elem, parentElem){
+	appendTo: function(elem, parentElem){
 		parentElem.appendChild(elem);
 	},
-	prependChild: function prependChild(elem, child){
+	prependChild: function(elem, child){
 		if(elem.firstChild) elem.insertBefore(child, elem.firstChild);
 
 		else elem.appendChild(child);
 	},
-	isNodeList: function isNodeList(nodes){
+	isNodeList: function(nodes){
 		var nodeCount = nodes.length;
 
 		return typeof nodes === 'object' && (typeof nodeCount === 'number') &&
 			/^\[object (HTMLCollection|NodeList|Object)\]$/.test(Object.prototype.toString.call(nodes)) &&
 			(nodeCount === 0 || (typeof nodes[0] === 'object' && nodes[0].nodeType > 0));
 	},
-	findAncestor: function findAncestor(el, class_id){
+	findAncestor: function(el, class_id){
 		while((el = el.parentElement) && (class_id[0] === '#' ? '#'+ el.id !== class_id : !el.className.includes(class_id)));
 
 		return el;
 	},
-	empty: function emptyElem(elem){
+	empty: function(elem){
 		if(!elem || !elem.lastChild) return;
 
 		while(elem.lastChild) elem.removeChild(elem.lastChild);
 
 		return elem;
 	},
-	remove: function removeElem(elem_s){
+	remove: function(elem_s){
 		if(dom.isNodeList(elem_s)) elem_s = [].slice.call(elem_s);
 
 		var elemCount = elem_s.length;
@@ -110,14 +110,14 @@ var dom = {
 
 		else if(elem_s && elem_s.parentElement) elem_s.parentElement.removeChild(elem_s);
 	},
-	hide: function hide(elem, cb){
+	hide: function(elem, cb){
 		dom.animation.add('write', function hide_write(){
 			if(!elem.className.includes('disappear')) elem.className += ' disappear';
 
 			if(cb) cb();
 		});
 	},
-	discard: function discard(elem, className, cb){
+	discard: function(elem, className, cb){
 		dom.animation.add('write', function discard_write(){
 			elem.className += (elem.className.includes('discard') ? ' ' : ' discard ') + (className || '');
 
@@ -126,19 +126,19 @@ var dom = {
 			}, 200);
 		});
 	},
-	show: function show(elem, className, cb){
+	show: function(elem, className, cb){
 		dom.animation.add('write', function show_write(){
 			elem.className = className || elem.className.replace(/\s?(disappear|discard)/g, '');
 
 			if(cb) cb();
 		});
 	},
-	setTransform: function setTransform(elem, value){
+	setTransform: function(elem, value){
 		dom.animation.add('write', function setTransform_write(){
 			elem.style.transform = elem.style.webkitTransform = elem.style.MozTransform = elem.style.msTransform = elem.style.OTransform = value;
 		});
 	},
-	setTitle: function setTitle(title){
+	setTitle: function(title){
 		dom.animation.add('read', function setTitle_read(){
 			dom.Title_p1 = dom.Title_p1 || document.getElementsByName('apple-mobile-web-app-title')[0];
 			dom.Title_p2 = dom.Title_p2 || document.getElementsByName('application-name')[0];
@@ -149,7 +149,7 @@ var dom = {
 			});
 		});
 	},
-	getScrollbarSize: function getScrollbarSize(){
+	getScrollbarSize: function(){
 		if(dom.scrollbarSize) return dom.scrollbarSize;
 
 		var scrollbarDiv = dom.createElem('div', { id: 'scrollbarDiv' });
@@ -170,7 +170,7 @@ var dom = {
 
 		return dom.scrollbarSize;
 	},
-	validate: function validate(elem, force){
+	validate: function(elem, force){
 		if(!elem) return;
 
 		if(force || elem.validation) elem.className = elem.className.replace(/\s?validated|\s?invalid/g, '');
@@ -231,7 +231,7 @@ var dom = {
 
 		return showingWarnings;
 	},
-	getScreenOrientation: function getScreenOrientation(){
+	getScreenOrientation: function(){
 		var orientation = 'primary';
 
 		if(window.screen && window.screen.orientation && window.screen.orientation.type) orientation = window.screen.orientation.type;
@@ -241,17 +241,17 @@ var dom = {
 	},
 	location: {
 		hash: {
-			get: function getHash(){
+			get: function(){
 				return location.hash.slice(1);
 			},
-			set: function setHash(hash){
+			set: function(hash){
 				if(history.pushState) return history.pushState(null, '', '#'+ hash);
 
 				location.hash = '#'+ hash;
 			},
 		},
 		query: {
-			parse: function parseQuery(){
+			parse: function(){
 				var queryObj = {};
 
 				if(!location.search.length) return queryObj;
@@ -266,10 +266,10 @@ var dom = {
 
 				return queryObj;
 			},
-			get: function getQuery(param){
+			get: function(param){
 				return dom.location.query.parse()[param];
 			},
-			set: function setQuery(){
+			set: function(){
 				var obj = {};
 
 				if(typeof arguments[0] === 'object') obj = arguments[0];
@@ -285,7 +285,7 @@ var dom = {
 		}
 	},
 	cookie: {
-		get: function getCookie(cookieName){
+		get: function(cookieName){
 			var cookieArr = document.cookie.split(/;\s?/g), cookieCount = cookieArr.length, cookie, x;
 
 			for(x = 0; x < cookieCount; ++x){
@@ -296,7 +296,7 @@ var dom = {
 
 			return undefined;
 		},
-		set: function setCookie(cookieName, cookieValue, expHours){
+		set: function(cookieName, cookieValue, expHours){
 			var cookie = cookieName +'='+ cookieValue;
 
 			if(expHours){
@@ -309,7 +309,7 @@ var dom = {
 
 			document.cookie = cookie +';';
 		},
-		delete: function deleteCookie(name){
+		delete: function(name){
 			document.cookie = name +'=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 		}
 	},
@@ -317,7 +317,7 @@ var dom = {
 		scheduled: false,
 		read_tasks: [],
 		write_tasks: [],
-		add: function addAnimationTask(read_write, task, context/*, arguments*/){
+		add: function(read_write, task, context/*, arguments*/){
 			if(context){
 				if(arguments.length > 3){
 					var args = Array.prototype.slice.call(arguments, 3);
@@ -339,7 +339,7 @@ var dom = {
 
 			return task;
 		},
-		replace: function replaceAnimationTask(read_write, task, context/*, arguments*/){
+		replace: function(read_write, task, context/*, arguments*/){
 			if(dom.animation[read_write +'_tasks'].includes(task)){
 				if(context) task = task.bind(context);
 
@@ -349,7 +349,7 @@ var dom = {
 			}
 			else dom.animation.add(read_write, task, context);
 		},
-		runner: function animationRunner(){
+		runner: function(){
 			try{
 				if(dom.animation.read_tasks.length){
 					//Log()('animation', 'running reads', dom.animation.read_tasks.length);
@@ -369,7 +369,7 @@ var dom = {
 
 			if(dom.animation.read_tasks.length || dom.animation.write_tasks.length) dom.animation.schedule();
 		},
-		schedule: function scheduleAnimationTasks(){
+		schedule: function(){
 			if(dom.animation.scheduled) return;
 			dom.animation.scheduled = true;
 
@@ -378,7 +378,7 @@ var dom = {
 	},
 	maintenance: {
 		functions: [],
-		init: function initMaintenance(initialMaintenance){
+		init: function(initialMaintenance){
 			if(initialMaintenance) dom.maintenance.functions = dom.maintenance.functions.concat(initialMaintenance);
 
 			dom.maintenance.runner = dom.funcRunner.bind(null, dom.maintenance.functions);
@@ -394,7 +394,7 @@ var dom = {
 
 			dom.maintenance.run();
 		},
-		run: function runMaintenance(){
+		run: function(){
 			dom.animation.add('read', function runMaintenance(){
 				dom.availableHeight = document.body.clientHeight;
 				dom.availableWidth = document.body.clientWidth;
@@ -403,7 +403,7 @@ var dom = {
 			});
 		}
 	},
-	funcRunner: function run(arr, destructive){
+	funcRunner: function(arr, destructive){
 		if(!destructive) arr = arr.slice(0);
 
 		var task;
@@ -411,5 +411,3 @@ var dom = {
 		while((task = arr.shift())) task();
 	}
 };
-
-window.addEventListener('beforeunload', dom.showLoader);
