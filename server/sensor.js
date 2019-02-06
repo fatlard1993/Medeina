@@ -29,7 +29,7 @@ class Sensor extends EventEmitter {
 		this.readings.push(val);
 
 		if(this.readings.length === this.settings.average){
-			val = avgArr(this.readings) + (this.settings.calibration || 0);
+			val = parseFloat((avgArr(this.readings) + (this.settings.calibration || 0)).toFixed(1));
 
 			this.emit('state', this);
 		}

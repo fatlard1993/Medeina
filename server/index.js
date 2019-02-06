@@ -5,6 +5,8 @@ const server = require('./httpServer').init(PORT);
 
 const Slave = require('./slave');
 
+const log = require('../commonJs/log');
+
 const stdin = process.openStdin();
 
 // lara's temp and humidity requirements
@@ -13,7 +15,20 @@ const stdin = process.openStdin();
 // 70-75 temp night
 // 30-40% humidity
 
-function schedule(task, hour, min = 0, daysAway = 0){
+function convertNumberScale(input, inputLow, inputHigh, outputLow, outputHigh, clamp){
+	if(clamp) input = Math.min(inputHigh, Math.max(inputLow, input));
+
+	return (((input - inputLow) / (inputHigh - inputLow)) * (outputHigh - outputLow)) + outputLow;
+}
+
+function gradientUnit(unit, unitScale, refMin, refMax, outMin, outMax){//only need to gradient the duration not the actual times
+	var unitsPerOutput = (outMax - outMin) / unitScale;
+
+	if(unit >= refMax) return outMax - ((unit - refMax) * unitsPerOutput);
+	else return outMin + ((unit - refMin) * unitsPerOutput);
+}
+
+function schedule(task, hour, min = 0, daysAway = 0){//todo make this support absolute or relative
 	var now = new Date();
 	var execution = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysAway, hour, min);
 
@@ -28,13 +43,13 @@ function schedule(task, hour, min = 0, daysAway = 0){
 	var hours = Math.abs(execution.getHours() - now.getHours());
 	var minutes = Math.abs(execution.getMinutes() - now.getMinutes());
 
-	console.log(`Task scheduled for ${hour}:${min >= 10 ? '' :'0'}${min} (${daysAway ? daysAway +' days ' : ''}${hours ? hours +' and hours ' : ''}${minutes ? minutes +' and minutes' : ''} in the future)`);
+	log(`Task scheduled for ${hour}:${min >= 10 ? '' :'0'}${min} (${daysAway ? daysAway +' days ' : ''}${hours ? hours +' and hours ' : ''}${minutes ? minutes +' and minutes' : ''} in the future)`);
 
 	return setTimeout(() => { task(task); }, ms);
 }
 
-function scheduleReoccurring(task, minutes, hours = 0){
-	console.log(`Task scheduled for every ${hours ? hours +' hours and ' : ''}${minutes} minutes in the future`);
+function scheduleReoccurring(task, minutes, hours = 0){//todo make this support absolute or relative
+	log(`Task scheduled for every ${hours ? hours +' hours and ' : ''}${minutes} minutes in the future`);
 
 	return setInterval(task, (hours * 6e6) + (minutes * 6e4));
 }
@@ -46,14 +61,18 @@ const settings = {
 		maxTempCoolSide: 80,
 		minTempCoolSide: 74,
 		maxTempHotSide: 90,
-		minTempHotSide: 87
+		minTempHotSide: 87,
+		lightOnTime: [9, 0],
+		lightOffTime: [21, 0]
 	},
 	office: {
-		maxTemp: 73,
-		minTemp: 71
+		maxTemp: 74,
+		minTemp: 72,
+		lightDelayMinutes: 10
 	},
 	temp_office: {
 		average: 6,
+		calibration: -2,
 		formatter: fahrenheit
 	},
 	humidity_office: {
@@ -61,7 +80,7 @@ const settings = {
 	},
 	temp_lara_cool_side: {
 		average: 6,
-		calibration: 1,
+		calibration: -3,
 		formatter: fahrenheit
 	},
 	humidity_lara_cool_side: {
@@ -81,6 +100,15 @@ const settings = {
 	}
 };
 
+// this.temperatureSchedule = schedule(() => {
+// 	this.temperatureSchedule = scheduleReoccurring(() => {
+// 		var temp = Math.round(gradientUnit(new Date().getHours(), 23, 9, 15, 72, 90));
+
+// 		this.settings.tempMin = temp - this.settings.tempTolerance;
+// 		this.settings.tempMax = temp + this.settings.tempTolerance;
+// 	}, 0, 1);
+// }, this.connectedTime.getHours() + 1);
+
 var slave = new Slave('slave1', settings);
 
 scheduleReoccurring(() => {
@@ -91,18 +119,46 @@ scheduleReoccurring(() => {
 	});
 }, 5);
 
+//todo a top level generic way to talk to sensors and devices (hub agnostic)
+
+setTimeout(() => {
+	var hubName = Object.keys(slave.hubs)[0];
+
+	if(slave.hubs[hubName].connectedTime.getHours() >= settings.lara.lightOffTime[0] || slave.hubs[hubName].connectedTime.getHours() <= settings.lara.lightOnTime[0]) slave.hubs[hubName].send('yellow 0');
+
+	settings.lara.lightOnSchedule = schedule((task) => {
+		slave.hubs[hubName].send('yellow 1');
+
+		log(`lara light on | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+
+		// settings.lara.lightOnTime = gradientUnit(new Date().getMonth(), 11, 6, 12, 8, 10).toFixed(1).split('.');
+		// settings.lara.lightOnTime[0] = parseInt(settings.lara.lightOnTime[0]);
+		// settings.lara.lightOnTime[1] = parseInt(settings.lara.lightOnTime[1] * 6.66);
+
+		settings.lara.lightOnSchedule = schedule(task, settings.lara.lightOnTime[0], settings.lara.lightOnTime[1]);
+	}, settings.lara.lightOnTime[0], settings.lara.lightOnTime[1]);
+
+	settings.lara.lightOffSchedule = schedule((task) => {
+		slave.hubs[hubName].send('yellow 0');
+
+		log(`lara light off | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+
+		settings.lara.lightOffSchedule = schedule(task, settings.lara.lightOffTime[0], settings.lara.lightOffTime[1]);
+	}, settings.lara.lightOffTime[0], settings.lara.lightOffTime[1]);
+}, 6000);
+
 slave.on('state', (hub, thing) => {
 	if(thing.name === 'temp_office'){
 		if(thing.state > settings.office.maxTemp && hub.things.green.state){
 			hub.send('green 0');
 
-			console.log('office heat off | temp: ', thing.state);
+			log(`office heat off | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 
 		else if(thing.state < settings.office.minTemp && !hub.things.green.state){
 			hub.send('green 1');
 
-			console.log('office heat on | temp: ', thing.state);
+			log(`office heat on | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 	}
 
@@ -110,13 +166,13 @@ slave.on('state', (hub, thing) => {
 		if(thing.state > settings.lara.maxTempCoolSide && !hub.things.fan.state){
 			hub.send('fan 1');
 
-			console.log('lara fan on | temp: ', thing.state);
+			log(`lara fan on | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 
 		else if(thing.state < settings.lara.minTempCoolSide && hub.things.fan.state){
 			hub.send('fan 0');
 
-			console.log('lara fan off | temp: ', thing.state);
+			log(`lara fan off | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 	}
 
@@ -124,26 +180,56 @@ slave.on('state', (hub, thing) => {
 		if(thing.state > settings.lara.maxTempHotSide && hub.things.brown.state){
 			hub.send('brown 0');
 
-			console.log('lara heat off | temp: ', thing.state);
+			log(`lara heat off | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 
 		else if(thing.state < settings.lara.minTempHotSide && !hub.things.brown.state){
 			hub.send('brown 1');
 
-			console.log('lara heat on | temp: ', thing.state);
+			log(`lara heat on | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 	}
+
+	else if(thing.name === 'motion'){
+		clearTimeout(settings.office.deskLightTimeout);
+
+		if(thing.state){// && !hub.things.motion.state
+			hub.send('blue 1');
+
+			log(`office light on | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+		}
+
+		else if(!thing.state){// && hub.things.motion.state
+			settings.office.deskLightTimeout = setTimeout(() => {
+				hub.send('blue 0');
+
+				log(`office light on | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+			}, settings.office.lightDelayMinutes * 6e4);
+		}
+	}
+
+	else if(thing.name === 'button' && thing.state){
+		this.send(`blue ${hub.things.blue.state ? '0' : '1'}`);
+
+		log(`office light ${hub.things.blue.state ? 'off' : 'on'} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+	}
+
+	else if(thing.name === 'light'){
+		//log('LIGHT', thing.state);// 1023 lights off | 950-960 desk | 380-420 lizard | 300-320 lizard & desk
+	}
+
+	log(thing);
 });
 
 stdin.addListener('data', function(data){
 	var cmd = data.toString().trim();
 
-	console.log(`CMD: ${cmd}`);
+	log(`CMD: ${cmd}`);
 
 	if(cmd.startsWith('send')){
 		cmd = cmd.replace('send ', '');
 
-		console.log(cmd);
+		log(cmd);
 
 		slave.hubs[Object.keys(slave.hubs)[0]].send(cmd);
 	}
@@ -151,22 +237,24 @@ stdin.addListener('data', function(data){
 	else if(cmd === 't'){
 		var hubPaths = Object.keys(slave.hubs);
 
+		log(`\ntime: ${new Date().getHours()}:${new Date().getMinutes()}`);
+
 		hubPaths.forEach(function(hubPath){
 			var thingNames = Object.keys(slave.hubs[hubPath].things);
 
 			thingNames.forEach(function(thingName){
 				var thing = slave.hubs[hubPath].things[thingName];
 
-				console.log(thing.name, thing.state);
+				log(thing.name, thing.state);
 			});
 		});
 	}
 
 	else if(cmd === 'things'){
-		console.log(slave.hubs[Object.keys(slave.hubs)[0]].things);
+		log(slave.hubs[Object.keys(slave.hubs)[0]].things);
 	}
 
 	else if(cmd === 's'){
-		console.log(settings);
+		log(settings);
 	}
 });
