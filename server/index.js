@@ -111,41 +111,43 @@ const settings = {
 
 var slave = new Slave('slave1', settings);
 
-// scheduleReoccurring(() => {
-// 	var hubPaths = Object.keys(slave.hubs);
+scheduleReoccurring(() => {
+	var hubPaths = Object.keys(slave.hubs);
 
-// 	hubPaths.forEach(function(hubPath){
-// 		slave.hubs[hubPath].send('getStates');
-// 	});
-// }, 5);
+	hubPaths.forEach(function(hubPath){
+		slave.hubs[hubPath].send('getStates');
+	});
+}, 5);
 
 //todo a top level generic way to talk to sensors and devices (hub agnostic)
 
-// setTimeout(() => {
-// 	var hubName = Object.keys(slave.hubs)[0];
+setTimeout(() => {
+	var hubName = Object.keys(slave.hubs)[0];
 
-// 	if(slave.hubs[hubName].connectedTime.getHours() >= settings.lara.lightOffTime[0] || slave.hubs[hubName].connectedTime.getHours() <= settings.lara.lightOnTime[0]) slave.hubs[hubName].send('yellow 0');
+	var now = new Date();
 
-// 	settings.lara.lightOnSchedule = schedule((task) => {
-// 		slave.hubs[hubName].send('yellow 1');
+	if(now.getHours() >= settings.lara.lightOffTime[0] || now.getHours() <= settings.lara.lightOnTime[0]) slave.hubs[hubName].send('yellow 0');
 
-// 		log(`lara light on | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+	settings.lara.lightOnSchedule = schedule((task) => {
+		slave.hubs[hubName].send('yellow 1');
 
-// 		// settings.lara.lightOnTime = gradientUnit(new Date().getMonth(), 11, 6, 12, 8, 10).toFixed(1).split('.');
-// 		// settings.lara.lightOnTime[0] = parseInt(settings.lara.lightOnTime[0]);
-// 		// settings.lara.lightOnTime[1] = parseInt(settings.lara.lightOnTime[1] * 6.66);
+		log(`lara light on | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 
-// 		settings.lara.lightOnSchedule = schedule(task, settings.lara.lightOnTime[0], settings.lara.lightOnTime[1]);
-// 	}, settings.lara.lightOnTime[0], settings.lara.lightOnTime[1]);
+		// settings.lara.lightOnTime = gradientUnit(new Date().getMonth(), 11, 6, 12, 8, 10).toFixed(1).split('.');
+		// settings.lara.lightOnTime[0] = parseInt(settings.lara.lightOnTime[0]);
+		// settings.lara.lightOnTime[1] = parseInt(settings.lara.lightOnTime[1] * 6.66);
 
-// 	settings.lara.lightOffSchedule = schedule((task) => {
-// 		slave.hubs[hubName].send('yellow 0');
+		settings.lara.lightOnSchedule = schedule(task, settings.lara.lightOnTime[0], settings.lara.lightOnTime[1]);
+	}, settings.lara.lightOnTime[0], settings.lara.lightOnTime[1]);
 
-// 		log(`lara light off | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+	settings.lara.lightOffSchedule = schedule((task) => {
+		slave.hubs[hubName].send('yellow 0');
 
-// 		settings.lara.lightOffSchedule = schedule(task, settings.lara.lightOffTime[0], settings.lara.lightOffTime[1]);
-// 	}, settings.lara.lightOffTime[0], settings.lara.lightOffTime[1]);
-// }, 6000);
+		log(`lara light off | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+
+		settings.lara.lightOffSchedule = schedule(task, settings.lara.lightOffTime[0], settings.lara.lightOffTime[1]);
+	}, settings.lara.lightOffTime[0], settings.lara.lightOffTime[1]);
+}, 6000);
 
 slave.on('state', (hub, thing) => {
 	if(thing.name === 'temp_office'){
