@@ -1,0 +1,32 @@
+html {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+
+	* {
+		font-family: "Source Sans Pro", sans-serif;
+		touch-action: manipulation;
+		-webkit-text-size-adjust: none;
+	}
+
+	*:not(input) {
+		cursor: default;
+		-webkit-tap-highlight-color: $transparent;
+		-webkit-touch-callout: none;
+		user-select: none;
+	}
+}
+
+body {
+	background-color: #222;
+	color: #e2e2e2;
+	font-size: 20px;
+}
+button {
+	cursor: pointer;
+	border: 2px outset rgba(66, 66, 66, 0.6);
+	font-size: 24px;
+	border-radius: 2px;
+	padding: 5px 25px;
+}

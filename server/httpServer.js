@@ -10,7 +10,7 @@ const log = require('../commonJs/log');
 
 const compilePage = require('./compilePage');
 
-const publicPath = path.join(__dirname, '../client/public');
+const fontsPath = path.join(__dirname, '../client/fonts');
 const homeSlug = '/home';
 
 const app = polka({
@@ -124,7 +124,7 @@ app.get('/test', function(req, res){
 	res.send('{ test: 1 }');
 });
 
-app.use(staticServer(publicPath));
+app.use('/fonts', staticServer(fontsPath));
 
 app.get('/home', function(req, res){
 	res.end(compilePage.compile('home'));

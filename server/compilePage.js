@@ -97,7 +97,7 @@ const compilePage = {
 
 				if(!includes) break htmlCache;
 
-				var $selfIndex = includes.indexOf('_$self.html');
+				var $selfIndex = includes.indexOf('$self.html');
 
 				if($selfIndex >= 0){
 					includes.splice($selfIndex, 1);
@@ -136,7 +136,7 @@ const compilePage = {
 
 		for(var x = 0, count = includes.length, file, filePath, fileName, fileExtension; x < count; ++x){
 			file = /^(.*\/)?([^\.]*)\.?(.*)?$/.exec(includes[x]);
-			filePath = file[1] || '_';
+			filePath = file[1] || (extension === 'html' ? '' : '_');
 			fileName = file[2];
 			fileExtension = file[3] || extension;
 

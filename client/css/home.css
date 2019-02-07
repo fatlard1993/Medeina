@@ -1,13 +1,5 @@
-// includes colors fonts fontAwesome
+// includes colors fonts fontAwesome base
 
-div.thing {
-	background: $purple;
-
-	div.one {
-		color: $green;
-	}
-}
-
-span.two{
-	@extend div.thing;
+div#content {
+	border:2px solid $white;
 }
