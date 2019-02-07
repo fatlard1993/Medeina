@@ -1,126 +1,184 @@
 const path = require('path');
+const fs = require('fs');
 
-const sass = require('node-sass');
+const babel = require('@babel/core');
+const postcss = require('postcss');
+const postcssAutoprefixer = require('autoprefixer');
+const postcssNested = require('postcss-nested');
+const postCssExtend = require('postcss-extend-rule');
+const postCssVariables = require('postcss-simple-vars');
 
 const fsExtended = require('./fsExtended');
 
 const log = require('../commonJs/log');
 
-//todo support babel
-//todo cache rendered scss, invalidate on source and any includes
-//todo support css autoprefixer
-//todo try out uglifying before caching
-//todo try modified stamp for determining if something has changed. Maybe its quicker?
+const autoprefixerOptions = {
+	flexBox: 'no-2009',
+	browsers: ['last 10 versions'],
+	cascade: false
+};
+const babelOptions = {
+	presets: ['@babel/env', 'minify']
+};
 
 const compilePage = {
-	headPath: path.join(__dirname, '../client/html/head.html'),
 	includesText: '// includes ',
+	babelText: '// babel',
+	openText: '\n</head><body>',
+	closeText: '\n</body></html>',
 	cache: {},
-	pages: {},
 	compile: function(name, dynamicContent){
 		var start = new Date().getTime();
 
-		this.readCacheFile(this.headPath);
+		var pageHtml = this.readCacheFile(name);
 
-		var htmlPath = path.join(__dirname, `../client/html/${name}.html`);
-
-		this.readCacheFile(htmlPath);
-
-		if(!this.pages[name]){
-			this.pages[name] = {
-				html: htmlPath,
-				files: []
-			};
-		}
-
-		this.generateIncludesHTML(name);
-		this.generateFullHTML(name);
+		var fullHTML = this.readCacheFile('head').replace('XXX', name) + (this.cache[name].includesHTML ? this.cache[name].includesHTML : '') + this.openText + pageHtml + this.closeText;
 
 		log(`Time to compile "${name}": ${new Date().getTime() - start}ms`);
 
-		return dynamicContent ? this.pages[name].fullHTML.replace('YYY', dynamicContent) : this.pages[name].fullHTML;
+		return dynamicContent ? fullHTML.replace('YYY', dynamicContent) : fullHTML;
 	},
-	readCacheFile: function(path){
-		if(!process.env.DEV && this.cache[path]) return this.cache[path].text;
+	readCacheFile: function(file){
+		if(!process.env.DEV && this.cache[file]) return this.cache[file].text;
 
-		var fileText = fsExtended.catSync(path);
-		var fileHash = fsExtended.checksum(fileText);
+		var toCache = !this.cache[file], mtime;
 
-		if(!this.cache[path] || this.cache[path].hash !== fileHash){
-			this.cache[path] = this.cache[path] || {};
+		if(!toCache){
+			mtime = String(fs.statSync(this.cache[file].path).mtime);
 
-			this.cache[path].hash = fileHash;
-			this.cache[path].text = fileText;
-
-			log(`Cached ${path}`);
+			toCache = this.cache[file].mtime !== mtime;
 		}
 
-		return this.cache[path].text;
-	},
-	readIncludes: function(text){
-		var includes = /(.*)\n/.exec(text)[1];
+		if(toCache){
+			log(1)(`Caching ${file}`);
 
-		return includes.startsWith(this.includesText) ? includes.substring(12).split(' ') : null;
-	},
-	generateFullHTML: function(name){
-		this.pages[name].fullHTML = this.readCacheFile(this.headPath).replace('XXX', name) + (this.pages[name].includes ? this.pages[name].includes : '') +'\n</head><body>'+ this.readCacheFile(this.pages[name].html).replace(this.pages[name].includes ? /.*\n/ : '', '') +'\n</body></html>';
-	},
-	generateIncludesHTML: function(name){
-		var includes = this.readIncludes(this.readCacheFile(this.pages[name].html));
+			this.cache[file] = this.cache[file] || {};
 
-		if(!includes) return;
+			var fileStats = /^(?:.*\/)?([^\.]*)\.?(.*)?$/.exec(file), fileExtension = fileStats[2] || 'html', fileName = fileStats[1], filePath, fileText, includes;
 
-		var _selfIndex = includes.indexOf('_self');
+			if(fileExtension === 'css'){
+				filePath = path.join(__dirname, '../client/css', file);
 
-		if(_selfIndex >= 0){
-			includes.splice(_selfIndex, 1);
-			includes.push(`${name}.js`, `${name}.css`);
-		}
+				fileText = fsExtended.catSync(filePath);
 
-		var includesHTML = '', fileName, fileExtension, subIncludes, file;
+				this.cache[file].includes = this.readIncludes(fileText, fileExtension);
 
-		for(var x = 0, count = includes.length; x < count; ++x){
-			fileName = includes[x];
-
-			if(!fileName) continue;
-
-			fileExtension = /^.*\.([^\\]+)$/.exec(fileName)[1];
-
-			if(fileExtension === 'js'){
-				file = this.readCacheFile(path.join(__dirname, '../client/js', fileName));
-				subIncludes = this.readIncludes(file);
-
-				includesHTML += '\n\t\t<script>';
+				if(this.cache[file].includes) fileText = fileText.replace(/.*\n/, '');
 			}
 
-			else{
-				try{
-					file = sass.renderSync({
-						file: path.join(__dirname, '../client/scss', fileName.replace('css', 'scss'))
-					});
+			jsCache: if(fileExtension === 'js'){
+				filePath = path.join(__dirname, '../client/js', file);
 
-					file = file.css;
+				fileText = fsExtended.catSync(filePath);
+
+				this.cache[file].includes = this.readIncludes(fileText, fileExtension);
+
+				if(!/^(.*)\n?(.*)\n?/.exec(fileText)[this.cache[file].includes ? 2 : 1].startsWith(this.babelText)) break jsCache;
+
+				try{
+					log(1)('Running babel on JS: ', filePath);
+
+					fileText = babel.transformSync(fileText, babelOptions).code;
 				}
 
 				catch(err){
-					log.error('Error rendering SCSS: ', err);
-				}
+					log.error('Error running babel on JS: ', filePath, err);
 
-				includesHTML += '\n\t\t<style>';
+					mtime = fileText = err;
+				}
 			}
 
-			if(subIncludes){
-				for(var y = 0, yCount = subIncludes.length; y < yCount; ++y){
-					includesHTML += '\n'+ this.readCacheFile(path.join(__dirname, `../client/${fileExtension}`, ({ '.': 1, '/': 1 }[subIncludes[y][0]] ? '' : '_') + subIncludes[y] +`.${fileExtension}`));
+			htmlCache: if(fileExtension === 'html'){
+				filePath = path.join(__dirname, '../client/html', fileName +'.html');
+
+				fileText = fsExtended.catSync(filePath);
+
+				includes = this.readIncludes(fileText, fileExtension);
+
+				if(!includes) break htmlCache;
+
+				var $selfIndex = includes.indexOf('_$self.html');
+
+				if($selfIndex >= 0){
+					includes.splice($selfIndex, 1);
+					includes.push(`${fileName}.js`, `${fileName}.css`);
 				}
 
-				subIncludes = null;
+				this.cache[file].includes = includes;
+
+				fileText = fileText.replace(/.*\n/, '');
+
+				this.generateIncludesHTML(file);
 			}
 
-			includesHTML += file +'</'+ (fileExtension === 'js' ? 'script>' : 'style>');
+			if(!filePath) filePath = file;
+			if(!mtime) mtime = String(fs.statSync(filePath).mtime);
+			if(!fileText) fileText = fsExtended.catSync(filePath);
+
+			this.cache[file].path = filePath;
+			this.cache[file].extension = fileExtension;
+			this.cache[file].mtime = mtime;
+			this.cache[file].text = fileText;
+
+			log(`Cached ${file}`);
 		}
 
-		this.pages[name].includes = includesHTML;
+		else if(this.cache[file].extension === 'html' && this.cache[file].includes) this.generateIncludesHTML(file);
+
+		return this.cache[file].text;
+	},
+	readIncludes: function(text, extension){
+		var firstLine = /(.*)\n/.exec(text)[1];
+
+		if(!firstLine.startsWith(this.includesText)) return;
+
+		var includes = firstLine.substring(12).split(' ');
+
+		for(var x = 0, count = includes.length, file, filePath, fileName, fileExtension; x < count; ++x){
+			file = /^(.*\/)?([^\.]*)\.?(.*)?$/.exec(includes[x]);
+			filePath = file[1] || '_';
+			fileName = file[2];
+			fileExtension = file[3] || extension;
+
+			includes[x] = `${filePath}${fileName}.${fileExtension}`;
+		}
+
+		return includes;
+	},
+	generateIncludesHTML: function(name){
+		var includesHTML = '', fileName, fileExtension, fileText, htmlTag;
+
+		for(var x = 0, y, count = this.cache[name].includes.length; x < count; ++x){
+			fileName = this.cache[name].includes[x];
+
+			if(!fileName) continue;
+
+			fileText = this.readCacheFile(fileName);
+			fileExtension = this.cache[fileName].extension;
+			htmlTag = fileExtension === 'js' ? 'script>' : 'style>';
+
+			if(this.cache[fileName].includes){
+				for(y = this.cache[fileName].includes.length - 1; y >= 0; --y){
+					fileText = this.readCacheFile(this.cache[fileName].includes[y]) +'\n'+ fileText;
+				}
+			}
+
+			if(fileExtension === 'css'){
+				try{
+					fileText = postcss([postcssAutoprefixer(autoprefixerOptions), postcssNested(), postCssExtend(), postCssVariables()]).process(fileText);
+				}
+
+				catch(err){
+					log.error('Error rendering CSS: ', fileName, err);
+
+					fileText = err;
+				}
+			}
+
+			includesHTML += '\n\t\t<'+ htmlTag + fileText +'</'+ htmlTag;
+		}
+
+		this.cache[name].includesHTML = includesHTML;
 	}
 };
 

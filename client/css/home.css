@@ -1,0 +1,13 @@
+// includes colors fonts fontAwesome
+
+div.thing {
+	background: $purple;
+
+	div.one {
+		color: $green;
+	}
+}
+
+span.two{
+	@extend div.thing;
+}

@@ -21,22 +21,23 @@ const app = polka({
 			else err = { err: err, code: 500 };
 		}
 
-		var detail;
-
-		try{
-			detail = err.detail || JSON.stringify(err, null, '  ');
-		}
-
-		catch(e){
-			detail = 'Unknown error!';
-		}
-
+		var detail = err.detail;
 		var titles = {
 			'401': '401 - Unauthorized',
 			'403': '403 - Forbidden',
 			'404': '404 - Not Found',
 			'500': '500 - Internal Server Error'
 		};
+
+		if(!err.detail){
+			try{ detail = JSON.stringify(err, null, '  '); }
+
+			catch(e){
+				log.error('Unknown error: ', e);
+
+				detail = 'Unknown error';
+			}
+		}
 
 		log.error()(`${req.originalUrl} | ${titles[err.code]}`);
 		log.error(1)(err);
@@ -47,18 +48,7 @@ const app = polka({
 			return res.redirect(307, err.redirectPath);
 		}
 
-		var file = fs.readFileSync(path.join(__dirname, '../client/html', 'error.html'), 'utf8');
-
-		if(!file){
-			log.error()('Unable to read error html file');
-
-			return res.status(500).end('ERROR');
-		}
-
-		file = file.replace(/XXX/g, titles[err.code] || err.code);
-		file = file.replace(/YYY/g, detail);
-
-		res.status(err.code).end(file);
+		res.status(err.code).end(compilePage.compile('error', detail));
 	}
 });
 

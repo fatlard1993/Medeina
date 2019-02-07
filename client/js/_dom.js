@@ -1,3 +1,5 @@
+// babel
+
 var dom = {
 	changeLocation: function(newLocation){
 		window.location = window.location.protocol +'//'+ window.location.hostname +':'+ (window.location.port || 80) + newLocation;
