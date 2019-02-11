@@ -36,6 +36,10 @@ class Hub extends EventEmitter {
 			catch(e){
 				log.error(data.toString(), e);
 
+				clearTimeout(this.reconnect_TO);
+
+				this.reconnect_TO = setTimeout(() => { this.send('connection_request'); }, 2000);
+
 				data = {};
 			}
 
@@ -87,7 +91,7 @@ class Hub extends EventEmitter {
 		this.port.on('open', () => {
 			log('Open: ', path);
 
-			this.port.drain(() => { this.send('connection_request'); });
+			setTimeout(() => { this.send('connection_request'); }, 2000);
 		});
 
 		this.port.on('close', (err) => {

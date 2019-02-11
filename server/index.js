@@ -219,8 +219,6 @@ slave.on('state', (hub, thing) => {
 	else if(thing.name === 'light'){
 		//log('LIGHT', thing.state);// 1023 lights off | 950-960 desk | 380-420 lizard | 300-320 lizard & desk
 	}
-
-	log(thing);
 });
 
 stdin.addListener('data', function(data){
