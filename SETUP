@@ -1,0 +1,25 @@
+#!/bin/bash
+
+echo " - Untracked files to be removed -"
+
+git clean -xdn
+
+echo -e "\n - Packages that can be updated -"
+
+ncu
+
+echo -e "\n[enter] to continue"
+
+read -p ""
+
+if [ $1 == "new" ]; then
+	echo -e "Removing package-lock\n"
+
+	rm -f ./package-lock.json
+fi
+
+git clean -xdf
+
+echo -e "\nInstalling packages"
+
+npm i
