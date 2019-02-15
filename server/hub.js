@@ -1,13 +1,12 @@
 const uuid = require('uuid/v4');
 const EventEmitter = require('events');
 
+const log = require('log');
 const Serialport = require('serialport');
 const Delimiter = require('@serialport/parser-delimiter');
 
 const Sensor = require('./sensor');
 const Device = require('./device');
-
-const log = require('../commonJs/log');
 
 class Hub extends EventEmitter {
   constructor(path, settings){

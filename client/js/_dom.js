@@ -1,6 +1,20 @@
 // babel
 
 var dom = {
+	// onLoad: function(func){
+	// 	console.log('test', func);
+
+	// 	this.onLoader = func;
+
+	// 	document.addEventListener('DOMContentLoaded', this.onLoaded);
+	// },
+	// onLoaded: function(){
+	// 	if(this.loaded) return;
+
+	// 	this.loaded = true;
+
+	// 	this.onLoader();
+	// },
 	changeLocation: function(newLocation){
 		window.location = window.location.protocol +'//'+ window.location.hostname +':'+ (window.location.port || 80) + newLocation;
 	},

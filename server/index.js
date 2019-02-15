@@ -1,11 +1,13 @@
 const PORT = process.env.PORT || 8080;
 
-const server = require('./httpServer').init(PORT);
-// const socketServer = new SocketServer({ server });
+const path = require('path');
+
+const log = require('log');
+const SocketServer = require('websocket-server');
+const { app, sendPage, compilePage, staticServer } = require('http-server')(PORT);
+const socketServer = new SocketServer({ server: app.server });
 
 const Slave = require('./slave');
-
-const log = require('../commonJs/log');
 
 const stdin = process.openStdin();
 
@@ -99,6 +101,26 @@ const settings = {
 		average: 10
 	}
 };
+
+app.get('/testj', function(req, res){
+	log()('Testing JSON...');
+
+	res.json({ test: 1 });
+});
+
+app.get('/test', function(req, res){
+	log()('Testing...');
+
+	res.send('test');
+});
+
+app.use('/fonts', staticServer(path.join(__dirname, '../client/fonts')));
+
+app.get('/home', sendPage('home'));
+
+socketServer.createEndpoint('test', function(){
+	return 'testing 1-2-3';
+});
 
 // this.temperatureSchedule = schedule(() => {
 // 	this.temperatureSchedule = scheduleReoccurring(() => {

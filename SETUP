@@ -23,3 +23,5 @@ git clean -xdf
 echo -e "\nInstalling packages"
 
 npm i
+
+zelda

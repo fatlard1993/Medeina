@@ -27,7 +27,8 @@
     "babel-preset-minify": "^0.5.0",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",
-    "performance-now": "^2.1.0",
+    "http-server": "github:fatlard1993/http-server",
+    "log": "github:fatlard1993/log",
     "polka": "^0.5.2",
     "postcss-extend-rule": "^2.0.0",
     "postcss-nested": "^4.1.1",
@@ -35,6 +36,7 @@
     "serialport": "^7.1.1",
     "serve-static": "^1.13.2",
     "uuid": "^3.3.2",
+    "websocket-server": "github:fatlard1993/websocket-server",
     "ws": "^6.1.2"
   }
 }
