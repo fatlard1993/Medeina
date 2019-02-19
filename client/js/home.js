@@ -1,6 +1,6 @@
-// includes ../../commonJs/util.js dom log
+// includes js-util dom log
 // babel
-/* global dom log */
+/* global util dom log */
 
 if(typeof dom === 'undefined') throw new Error('dom is undefined');
 if(typeof log === 'undefined') throw new Error('log is undefined');

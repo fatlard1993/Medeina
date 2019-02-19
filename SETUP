@@ -12,13 +12,13 @@ echo -e "\n[enter] to continue. [y + enter] to update package versions and conti
 
 read -p "" TEST
 
-if [ $TEST == "y" ]; then
+if [ "$TEST" == "y" ]; then
 	echo -e "\nUpdating package.json\n"
 
 	ncu -u
 fi
 
-if [ $1 == "new" ]; then
+if [ "$1" == "new" ]; then
 	echo -e "Removing package-lock.json\n"
 
 	rm -f ./package-lock.json

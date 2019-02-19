@@ -28,6 +28,7 @@
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",
     "http-server": "github:fatlard1993/http-server",
+    "js-util": "github:fatlard1993/js-util",
     "log": "github:fatlard1993/log",
     "polka": "^0.5.2",
     "postcss-extend-rule": "^2.0.0",
