@@ -1,10 +1,14 @@
-const PORT = process.env.PORT || 8080;
-
 const path = require('path');
 
 const log = require('log');
+const Config = require('config');
+
+var config = new Config(path.resolve('./config.json'), {
+	port: process.env.PORT || 8080
+});
+
+const { app, sendPage, pageCompiler, staticServer } = require('http-server')(config.port);
 const SocketServer = require('websocket-server');
-const { app, sendPage, compilePage, staticServer } = require('http-server')(PORT);
 const socketServer = new SocketServer({ server: app.server });
 
 const Slave = require('./slave');
@@ -103,13 +107,13 @@ const settings = {
 };
 
 app.get('/testj', function(req, res){
-	log()('Testing JSON...');
+	log('Testing JSON...');
 
 	res.json({ test: 1 });
 });
 
 app.get('/test', function(req, res){
-	log()('Testing...');
+	log('Testing...');
 
 	res.send('test');
 });

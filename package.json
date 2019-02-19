@@ -26,6 +26,7 @@
     "autoprefixer": "^9.4.7",
     "babel-preset-minify": "^0.5.0",
     "body-parser": "^1.18.3",
+    "config": "github:fatlard1993/config",
     "cookie-parser": "^1.4.3",
     "http-server": "github:fatlard1993/http-server",
     "js-util": "github:fatlard1993/js-util",
