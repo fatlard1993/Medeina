@@ -1,20 +1,117 @@
 // babel
+/* global util */
 
 var dom = {
-	// onLoad: function(func){
-	// 	console.log('test', func);
+	onLoad: function(func){
+		console.log('test', func);
 
-	// 	this.onLoader = func;
+		dom.onLoader = func;
 
-	// 	document.addEventListener('DOMContentLoaded', this.onLoaded);
-	// },
-	// onLoaded: function(){
-	// 	if(this.loaded) return;
+		document.addEventListener('DOMContentLoaded', dom.onLoaded);
 
-	// 	this.loaded = true;
+		document.addEventListener('mousedown', dom.interact.pointerDown);
+		document.addEventListener('touchstart', dom.interact.pointerDown);
 
-	// 	this.onLoader();
-	// },
+		document.addEventListener('click', dom.interact.pointerUp);
+		document.addEventListener('touchend', dom.interact.pointerUp);
+
+		document.addEventListener('keydown', dom.interact.keyDown);
+		document.addEventListener('keyup', dom.interact.keyUp);
+
+		document.addEventListener('change', dom.interact.change);
+
+		document.oncontextmenu = dom.interact.contextMenu;
+
+		setTimeout(function acceptKeyPresses_TO(){ dom.interact.acceptKeyPresses = true; }, 1000);
+	},
+	onLoaded: function(){
+		if(dom.loaded) return;
+
+		dom.loaded = true;
+
+		dom.onLoader();
+	},
+	interact: {
+		activity: 0,
+		pressedKeys: {},
+		acceptKeyPresses: false,
+		pointerTarget: null,
+		onPointerDown: [],
+		onPointerUp: [],
+		onKeyDown: [],
+		onKeyUp: [],
+		onChange: [],
+		onContextMenu: [],
+		on: function(eventName, func){
+			dom.interact['on'+ util.capitalize(eventName)].push(func);
+		},
+		runEventFunctions: function(){
+			var eventName = Array.prototype.shift.apply(arguments);
+
+			for(var x = 0, count = dom.interact[eventName].length; x < count; ++x){
+				if(eventName.includes('Pointer') && !dom.interact.pointerTarget) break;
+
+				dom.interact[eventName][x].apply(null, arguments);
+			}
+		},
+		pointerDown: function pointerDown(evt){
+			dom.interact.activity++;
+
+			if(evt.which === 2 || typeof evt.target.className !== 'string') return;
+
+			dom.interact.pointerTarget = evt.target;
+
+			dom.interact.runEventFunctions('onPointerDown', evt);
+		},
+		pointerUp: function pointerUp(evt){
+			if(evt.which === 2 || evt.which === 3 || typeof evt.target.className !== 'string' || !evt.cancelable) return;
+
+			if(evt.target !== dom.interact.pointerTarget) return (dom.interact.pointerTarget = null);
+
+			dom.interact.runEventFunctions('onPointerUp', evt);
+		},
+		translateKeyCode: function translateKeyCode(keyCode){
+			var n = null, map = [n, n, n, 'CANCEL', n, n, 'HELP', n, 'BACK_SPACE', 'TAB', n, n, 'CLEAR', 'ENTER', 'ENTER_SPECIAL', n, 'SHIFT', 'CONTROL', 'ALT', 'PAUSE', 'CAPS_LOCK', 'KANA', 'EISU', 'JUNJA', 'FINAL', 'HANJA', n, 'ESCAPE', 'CONVERT', 'NONCONVERT', 'ACCEPT', 'MODECHANGE', 'SPACE', 'PAGE_UP', 'PAGE_DOWN', 'END', 'HOME', 'LEFT', 'UP', 'RIGHT', 'DOWN', 'SELECT', 'PRINT', 'EXECUTE', 'PRINTSCREEN', 'INSERT', 'DELETE', n, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'COLON', 'SEMICOLON', 'LESS_THAN', 'EQUALS', 'GREATER_THAN', 'QUESTION_MARK', 'AT', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'OS_KEY', n, 'CONTEXT_MENU', n, 'SLEEP', 'NUMPAD0', 'NUMPAD1', 'NUMPAD2', 'NUMPAD3', 'NUMPAD4', 'NUMPAD5', 'NUMPAD6', 'NUMPAD7', 'NUMPAD8', 'NUMPAD9', 'MULTIPLY', 'ADD', 'SEPARATOR', 'SUBTRACT', 'DECIMAL', 'DIVIDE', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14', 'F15', 'F16', 'F17', 'F18', 'F19', 'F20', 'F21', 'F22', 'F23', 'F24', n, n, n, n, n, n, n, n, 'NUM_LOCK', 'SCROLL_LOCK', 'WIN_OEM_FJ_JISHO', 'WIN_OEM_FJ_MASSHOU', 'WIN_OEM_FJ_TOUROKU', 'WIN_OEM_FJ_LOYA', 'WIN_OEM_FJ_ROYA', n, n, n, n, n, n, n, n, n, 'CIRCUMFLEX', 'EXCLAMATION', 'DOUBLE_QUOTE', 'HASH', 'DOLLAR', 'PERCENT', 'AMPERSAND', 'UNDERSCORE', 'OPEN_PAREN', 'CLOSE_PAREN', 'ASTERISK', 'PLUS', 'PIPE', 'HYPHEN_MINUS', 'OPEN_CURLY_BRACKET', 'CLOSE_CURLY_BRACKET', 'TILDE', n, n, n, n, 'VOLUME_MUTE', 'VOLUME_DOWN', 'VOLUME_UP', n, n, 'SEMICOLON', 'EQUALS', 'COMMA', 'MINUS', 'PERIOD', 'SLASH', 'BACK_QUOTE', n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, 'OPEN_BRACKET', 'BACK_SLASH', 'CLOSE_BRACKET', 'QUOTE', n, 'META', 'ALTGR', n, 'WIN_ICO_HELP', 'WIN_ICO_00', n, 'WIN_ICO_CLEAR', n, n, 'WIN_OEM_RESET', 'WIN_OEM_JUMP', 'WIN_OEM_PA1', 'WIN_OEM_PA2', 'WIN_OEM_PA3', 'WIN_OEM_WSCTRL', 'WIN_OEM_CUSEL', 'WIN_OEM_ATTN', 'WIN_OEM_FINISH', 'WIN_OEM_COPY', 'WIN_OEM_AUTO', 'WIN_OEM_ENLW', 'WIN_OEM_BACKTAB', 'ATTN', 'CRSEL', 'EXSEL', 'EREOF', 'PLAY', 'ZOOM', n, 'PA1', 'WIN_OEM_CLEAR', n];
+
+			return map[keyCode];
+		},
+		keyDown: function keyDown(evt){
+			var keyPressed = dom.interact.translateKeyCode(evt.which || evt.keyCode);
+
+			if(dom.interact.pressedKeys[keyPressed]) return; // not yet fired keyup on this key
+			else if(!dom.interact.acceptKeyPresses) return (dom.interact.pressedKeys[keyPressed] = 2); // keypress while not accepting
+			else dom.interact.pressedKeys[keyPressed] = 1; // valid keypress
+
+			dom.interact.activity++;
+
+			if(evt.target.nodeName === 'SELECT') return;
+
+			dom.interact.runEventFunctions('onKeyDown', evt, keyPressed);
+		},
+		keyUp: function keyUp(evt){
+			var keyPressed = dom.interact.translateKeyCode(evt.which || evt.keyCode);
+
+			if(!dom.interact.pressedKeys[keyPressed]) return; // keyup already fired on this key
+			else if(dom.interact.pressedKeys[keyPressed] === 2) return (dom.interact.pressedKeys[keyPressed] = 0); // keypress rejected due to being pressed before accepting
+			else dom.interact.pressedKeys[keyPressed] = 0; // valid keypress reset
+
+			dom.validate(evt.target);
+
+			dom.interact.runEventFunctions('onKeyUp', evt, keyPressed);
+		},
+		change: function change(evt){
+			dom.validate(evt.target);
+
+			dom.interact.runEventFunctions('onChange', evt);
+		},
+		contextMenu: function contextMenu(evt){
+			if((document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA'))) return;
+
+			evt.preventDefault();
+
+			dom.interact.runEventFunctions('onContextMenu', evt);
+		}
+	},
 	changeLocation: function(newLocation){
 		window.location = window.location.protocol +'//'+ window.location.hostname +':'+ (window.location.port || 80) + newLocation;
 	},

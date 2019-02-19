@@ -1,4 +1,4 @@
-// includes dom ../../../node_modules/log/src/index.js
+// includes ../../commonJs/util.js dom log
 // babel
 /* global dom log */
 
@@ -24,14 +24,7 @@ dom.onLoad(function onLoad(){
 		// var data = JSON.parse(evt.data);
 	});
 
-	function onPointerUp(evt){
-		// console.log('onPointerUp', evt);
-
-		if(evt.target.id === 'content'){
-			ws.reply('test');
-		}
-	}
-
-	document.addEventListener('click', onPointerUp);
-	document.addEventListener('touchend', onPointerUp);
+	dom.interact.on('pointerUp', function(evt){
+		log(arguments);
+	});
 });
