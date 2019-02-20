@@ -3,8 +3,6 @@
 
 var dom = {
 	onLoad: function(func){
-		console.log('test', func);
-
 		dom.onLoader = func;
 
 		document.addEventListener('DOMContentLoaded', dom.onLoaded);
@@ -116,16 +114,16 @@ var dom = {
 		window.location = window.location.protocol +'//'+ window.location.hostname +':'+ (window.location.port || 80) + newLocation;
 	},
 	localStorage: (function initLocalStorage(){
-		var uid = new Date(), storage, result;
+		var uid = new Date(), result;
 
 		try{
-			(storage = window.localStorage).setItem(uid, uid);
+			window.localStorage.setItem(uid, uid);
 
-			result = storage.getItem(uid) === uid;
+			result = !!window.localStorage.getItem(uid);
 
-			storage.removeItem(uid);
+			window.localStorage.removeItem(uid);
 
-			return result && storage;
+			return result && window.localStorage;
 		}
 
 		catch(e){
@@ -313,9 +311,7 @@ var dom = {
 		return validationWarning;
 	},
 	checkValid: function(string, regex){
-		if(new RegExp(regex).test(string)) return 'validated';
-
-		else return 'invalid';
+		return new RegExp(regex).test(string) ? 'validated' : 'invalid';
 	},
 	showValidationWarnings: function(parentElement){
 		var invalidElements = parentElement.getElementsByClassName('invalid');
