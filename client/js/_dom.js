@@ -1,5 +1,6 @@
+// includes js-util log
 // babel
-/* global util */
+/* global util log logHelp */
 
 var dom = {
 	onLoad: function(func){
@@ -26,6 +27,8 @@ var dom = {
 		if(dom.loaded) return;
 
 		dom.loaded = true;
+
+		logHelp.DBG = dom.storage.get('DBG');
 
 		dom.onLoader();
 	},
