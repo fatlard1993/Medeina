@@ -4,10 +4,10 @@ const log = require('log');
 const Config = require('config');
 
 var config = new Config(path.resolve('./config.json'), {
-	port: process.env.PORT || 8080
+	port: 8080
 });
 
-const { app, sendPage, pageCompiler, staticServer } = require('http-server')(config.port);
+const { app, sendPage, pageCompiler, staticServer } = require('http-server')(process.env.PORT || config.current.port);
 const SocketServer = require('websocket-server');
 const socketServer = new SocketServer({ server: app.server });
 
