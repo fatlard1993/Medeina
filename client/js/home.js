@@ -2,11 +2,8 @@
 // babel
 /* global dom log */
 
-if(typeof dom === 'undefined') throw new Error('dom is undefined');
-if(typeof log === 'undefined') throw new Error('log is undefined');
-
 dom.onLoad(function onLoad(){
-	const ws = new WebSocket('ws://'+ location.host +'/api');
+	const ws = new WebSocket(`ws://${location.host}/api`);
 
 	ws.reply = function(type, payload){
 		ws.send(JSON.stringify({ type, payload }));
