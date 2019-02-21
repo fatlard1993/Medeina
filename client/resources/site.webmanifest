@@ -1,0 +1,10 @@
+{
+	"lang": "en-US",
+	"orientation": "any",
+	"display": "standalone",
+	"theme_color": "#164F40",
+	"background_color": "#ffffff",
+	"name": "Medeina",
+	"short_name": "Medeina",
+	"start_url": "/home"
+}
