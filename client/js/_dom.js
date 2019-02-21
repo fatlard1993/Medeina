@@ -22,13 +22,13 @@ var dom = {
 		document.oncontextmenu = dom.interact.contextMenu;
 
 		setTimeout(function acceptKeyPresses_TO(){ dom.interact.acceptKeyPresses = true; }, 1000);
+
+		logHelp.DBG = dom.storage.get('DBG');
 	},
 	onLoaded: function(){
 		if(dom.loaded) return;
 
 		dom.loaded = true;
-
-		logHelp.DBG = dom.storage.get('DBG');
 
 		dom.onLoader();
 	},
@@ -129,8 +129,8 @@ var dom = {
 			return result && window.localStorage;
 		}
 
-		catch(e){
-			console.error(e);
+		catch(err){
+			log.error(err);
 		}
 	}()),
 	storage: {
@@ -474,7 +474,7 @@ var dom = {
 			}
 
 			catch(err){
-				console.error()('dom.animation.runner encountered an error!', err);
+				log.error('dom.animation.runner encountered an error!', err);
 			}
 
 			dom.animation.scheduled = false;
