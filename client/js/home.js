@@ -1,4 +1,4 @@
-// includes dom log socketClient
+// includes dom log socket-client
 // babel
 /* global dom log socketClient */
 

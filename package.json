@@ -28,6 +28,7 @@
     "log": "github:fatlard1993/log",
     "serialport": "^7.1.1",
     "serve-static": "^1.13.2",
+    "socket-client": "github:fatlard1993/socket-client",
     "uuid": "^3.3.2",
     "websocket-server": "github:fatlard1993/websocket-server"
   }
