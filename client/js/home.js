@@ -1,27 +1,33 @@
-// includes dom log
+// includes dom log socketClient
 // babel
-/* global dom log */
+/* global dom log socketClient */
 
 dom.onLoad(function onLoad(){
-	const ws = new WebSocket(`ws://${location.host}/api`);
+	socketClient.init();
 
-	ws.reply = function(type, payload){
-		ws.send(JSON.stringify({ type, payload }));
-	};
+	socketClient.on('open', function(evt){
+		log('socketClient open', evt);
 
-	ws.addEventListener('open', function(evt){
-		// log('Websocket connection open: ', evt);
-
-		ws.reply('test');
+		socketClient.reply('type', 'payload');
 	});
 
-	ws.addEventListener('message', function(evt){
-		log('Message from server: ', evt.data);
+	socketClient.on('error', function(evt){
+		log('socketClient error', evt);
+	});
 
-		// var data = JSON.parse(evt.data);
+	socketClient.on('message', function(evt){
+		log('socketClient message', evt);
+	});
+
+	socketClient.on('close', function(evt){
+		log('socketClient close', evt);
+
+		socketClient.reconnect();
 	});
 
 	dom.interact.on('pointerUp', function(evt){
-		log(arguments);
+		log('interact pointerUp', evt);
+
+		socketClient.reply('pointerUp', { test: 1, get thing(){ return 2; }});
 	});
 });
