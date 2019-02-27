@@ -3,9 +3,11 @@
 /* global dom log socketClient notify menu prompt */
 
 dom.onLoad(function onLoad(){
-	notify.init();
+	menu.init({
+		main: ['test', 'test2:~:red']
+	});
 
-	menu.init();
+	notify.init();
 
 	prompt.init();
 
@@ -39,11 +41,9 @@ dom.onLoad(function onLoad(){
 		notify('test', 'test');
 	});
 
-	menu.list.main = ['test', 'test2:~:red'];
-
-	menu.handleSelection = function(){
-		log(arguments);
+	menu.on('selection', function(evt){
+		log(this.isOpen, evt);
 
 		prompt.err('test err');
-	};
+	});
 });
