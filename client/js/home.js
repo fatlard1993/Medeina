@@ -1,11 +1,13 @@
-// includes dom log socket-client notify menu
+// includes dom log socket-client notify menu prompt
 // babel
-/* global dom log socketClient notify menu */
+/* global dom log socketClient notify menu prompt */
 
 dom.onLoad(function onLoad(){
 	notify.init();
 
 	menu.init();
+
+	prompt.init();
 
 	socketClient.init();
 
@@ -41,6 +43,7 @@ dom.onLoad(function onLoad(){
 
 	menu.handleSelection = function(){
 		log(arguments);
-	};
 
+		prompt.err('test err');
+	};
 });
