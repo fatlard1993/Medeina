@@ -1,8 +1,12 @@
-// includes dom log socket-client
+// includes dom log socket-client notify menu
 // babel
-/* global dom log socketClient */
+/* global dom log socketClient notify menu */
 
 dom.onLoad(function onLoad(){
+	notify.init();
+
+	menu.init();
+
 	socketClient.init();
 
 	socketClient.on('open', function(evt){
@@ -29,5 +33,14 @@ dom.onLoad(function onLoad(){
 		log('interact pointerUp', evt);
 
 		socketClient.reply('pointerUp', { test: 1, get thing(){ return 2; }});
+
+		notify('test', 'test');
 	});
+
+	menu.list.main = ['test', 'test2:~:red'];
+
+	menu.handleSelection = function(){
+		log(arguments);
+	};
+
 });
