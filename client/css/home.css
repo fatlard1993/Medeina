@@ -18,6 +18,12 @@ html {
 		-webkit-touch-callout: none;
 		user-select: none;
 	}
+
+	.selectable {
+		cursor: text;
+		-webkit-tap-highlight-color: initial;
+		user-select: text;
+	}
 }
 
 body {
@@ -29,7 +35,7 @@ body {
 button {
 	cursor: pointer;
 	border: 2px outset rgba(66, 66, 66, 0.6);
-	font-size: 24px;
+	font-size: 18px;
 	border-radius: 2px;
 	padding: 5px 25px;
 }
