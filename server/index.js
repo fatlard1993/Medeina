@@ -7,7 +7,7 @@ var config = new Config(path.resolve('./config.json'), {
 	port: 8080
 });
 
-const { app, sendPage, pageCompiler, staticServer } = require('http-server')(process.env.PORT || config.current.port);
+const { app, sendPage, pageCompiler, staticServer } = require('http-server').init(process.env.PORT || config.current.port);
 const SocketServer = require('websocket-server');
 const socketServer = new SocketServer({ server: app.server });
 
