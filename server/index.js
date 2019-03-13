@@ -1,9 +1,9 @@
 const path = require('path');
 
 const log = require('log');
-const Config = require('config');
+const ConfigManager = require('config-manager');
 
-var config = new Config(path.resolve('./config.json'), {
+var config = new ConfigManager(path.resolve('./config.json'), {
 	port: 8080
 });
 

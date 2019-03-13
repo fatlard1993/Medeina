@@ -21,7 +21,7 @@
     "eslint": "^5.10.0"
   },
   "dependencies": {
-    "config": "github:fatlard1993/config",
+    "config-manager": "github:fatlard1993/config-manager",
     "dom": "github:fatlard1993/dom",
     "http-server": "github:fatlard1993/http-server",
     "js-util": "github:fatlard1993/js-util",
