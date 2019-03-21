@@ -1,4 +1,4 @@
-// includes colors fonts notify menu dialog
+// includes dom colors fonts notify menu dialog
 
 html {
 	position: fixed;
@@ -27,8 +27,8 @@ html {
 }
 
 body {
-	background-color: #222;
-	color: #e2e2e2;
+	background-color: $grey-darkest;
+	color: $white;
 	font-size: 20px;
 }
 
