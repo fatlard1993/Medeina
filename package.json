@@ -33,10 +33,11 @@
     "menu": "github:fatlard1993/menu#2.x.x",
     "notify": "github:fatlard1993/notify#2.x.x",
     "prompt": "github:fatlard1993/prompt#2.x.x",
-    "socket-client": "github:fatlard1993/socket-client#2.x.x",
-    "websocket-server": "github:fatlard1993/websocket-server#2.x.x",
     "serialport": "^7.1.4",
     "serve-static": "^1.13.2",
-    "uuid": "^3.3.2"
+    "socket-client": "github:fatlard1993/socket-client#2.x.x",
+    "uuid": "^3.3.2",
+    "websocket-server": "github:fatlard1993/websocket-server#2.x.x",
+    "yargs": "^13.2.2"
   }
 }

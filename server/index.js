@@ -2,13 +2,14 @@
 const path = require('path');
 
 const log = require('log');
+const args = require('yargs').argv;
 const ConfigManager = require('config-manager');
 
 var config = new ConfigManager(path.resolve('./config.json'), {
 	port: 8080
 });
 
-const { app, sendPage, pageCompiler, staticServer } = require('http-server').init(process.env.PORT || config.current.port);
+const { app, sendPage, pageCompiler, staticServer } = require('http-server').init(args.port || config.current.port);
 const SocketServer = require('websocket-server');
 const socketServer = new SocketServer({ server: app.server });
 
