@@ -17,6 +17,8 @@ const Slave = require('./slave');
 
 const stdin = process.openStdin();
 
+pageCompiler.buildFile('home');
+
 // lara's temp and humidity requirements
 // 87-90 temp high side
 // 74-80 temp low side
