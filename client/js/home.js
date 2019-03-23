@@ -5,7 +5,7 @@
 dom.onLoad(function onLoad(){
 	menu.init({
 		main: ['test', 'test2:~:red']
-	});
+	}, { discardDirection: 'static' });
 
 	notify.init();
 
