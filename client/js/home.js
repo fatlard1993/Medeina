@@ -21,6 +21,29 @@ dom.onLoad(function onLoad(){
 		socketClient.reconnect();
 	});
 
+	var statusElements = {};
+
+	function addStatusElem(thing){
+		var status = dom.getElemById('status');
+
+		if(!statusElements[thing.name]) statusElements[thing.name] = dom.createElem('div', { appendTo: status });
+
+		statusElements[thing.name].textContent = `${thing.name} : ${thing.state}`;
+	}
+
+	socketClient.on('currentStatus', function(things){
+		log('socketClient currentStatus', things);
+
+		for(var x = 0, arr = Object.keys(things), count = arr.length; x < count; ++x) addStatusElem({ name: arr[x], state: things[arr[x]] });
+	});
+
+	socketClient.on('update', function(thing){
+		log('socketClient update', thing);
+
+		addStatusElem(thing);
+	});
+
+
 	dom.interact.on('pointerUp', function(evt){
 		log('interact pointerUp', evt);
 	});

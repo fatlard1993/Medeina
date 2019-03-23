@@ -116,17 +116,7 @@ const settings = {
 	}
 };
 
-app.get('/testj', function(req, res){
-	log('Testing JSON...');
-
-	res.json({ test: 1 });
-});
-
-app.get('/test', function(req, res){
-	log('Testing...');
-
-	res.send('test');
-});
+const currentStatus = {};
 
 app.use('/resources', staticServer(path.join(rootFolder, 'client/resources')));
 
@@ -134,8 +124,10 @@ app.use('/fonts', staticServer(path.join(rootFolder, 'client/fonts')));
 
 app.get('/home', sendPage('home'));
 
-socketServer.createEndpoint('test', function(){
-	return 'testing 1-2-3';
+socketServer.registerEndpoints({
+	client_connect: function(){
+		this.reply('currentStatus', currentStatus);
+	}
 });
 
 // this.temperatureSchedule = schedule(() => {
@@ -188,6 +180,12 @@ var slave = new Slave('slave1', settings);
 // }, 6000);
 
 slave.on('state', (hub, thing) => {
+	if(!thing.name) return; // todo why does this happen?
+
+	socketServer.broadcast('update', { name: thing.name, state: thing.state });
+
+	currentStatus[thing.name] = thing.state;
+
 	if(thing.name === 'temp_office'){
 		if(thing.state > settings.office.maxTemp && hub.things.green.state){
 			hub.send('green 0');
