@@ -9,22 +9,10 @@ dom.onLoad(function onLoad(){
 
 	notify.init();
 
-	dialog.init();
-
 	socketClient.init();
-
-	socketClient.on('open', function(evt){
-		log('socketClient open', evt);
-
-		socketClient.reply('type', 'payload');
-	});
 
 	socketClient.on('error', function(evt){
 		log('socketClient error', evt);
-	});
-
-	socketClient.on('message', function(evt){
-		log('socketClient message', evt);
 	});
 
 	socketClient.on('close', function(evt){
@@ -35,10 +23,15 @@ dom.onLoad(function onLoad(){
 
 	dom.interact.on('pointerUp', function(evt){
 		log('interact pointerUp', evt);
+	});
 
-		socketClient.reply('pointerUp', { test: 1, get thing(){ return 2; }});
+	dom.interact.on('contextMenu', function(evt){
+		log('contextMenu', evt.target);
 
-		notify('test', 'test');
+		menu.open('main');
+
+		menu.elem.style.top = (evt.clientY >= document.body.clientHeight - menu.elem.clientHeight ? evt.clientY - menu.elem.clientHeight : evt.clientY) +'px';
+		menu.elem.style.left = (evt.clientX >= document.body.clientWidth - menu.elem.clientWidth ? evt.clientX - menu.elem.clientWidth : evt.clientX) +'px';
 	});
 
 	menu.on('selection', function(evt){

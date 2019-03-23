@@ -1,15 +1,21 @@
 #!/usr/bin/env node
+
 const path = require('path');
+
+const findRoot = require('find-root');
+const rootFolder = findRoot(__dirname);
+
+process.chdir(rootFolder);
 
 const log = require('log');
 const args = require('yargs').argv;
-const ConfigManager = require('config-manager');
+const Config = require('config-manager');
 
-var config = new ConfigManager(path.resolve('./config.json'), {
+var config = new Config(path.resolve(rootFolder, 'config.json'), {
 	port: 8080
 });
 
-const { app, sendPage, pageCompiler, staticServer } = require('http-server').init(args.port || config.current.port);
+const { app, sendPage, pageCompiler, staticServer } = require('http-server').init(args.port || config.current.port, rootFolder);
 const SocketServer = require('websocket-server');
 const socketServer = new SocketServer({ server: app.server });
 
@@ -122,9 +128,9 @@ app.get('/test', function(req, res){
 	res.send('test');
 });
 
-app.use('/resources', staticServer(path.join(__dirname, '../client/resources')));
+app.use('/resources', staticServer(path.join(rootFolder, 'client/resources')));
 
-app.use('/fonts', staticServer(path.join(__dirname, '../client/fonts')));
+app.use('/fonts', staticServer(path.join(rootFolder, 'client/fonts')));
 
 app.get('/home', sendPage('home'));
 

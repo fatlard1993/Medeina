@@ -39,7 +39,7 @@ if [ ! -e "$(which zelda)" ]; then
 fi
 
 if [ "$1" == "dev" ]; then
-	zelda -ia
+	zelda -ai
 else
 	npm i --only=prod
 fi
