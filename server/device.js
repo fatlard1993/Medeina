@@ -12,13 +12,13 @@ class Device extends EventEmitter {
 	}
 
 	defaultFormatter(val){
-		this.emit('state', val);
-
 		return val;
 	}
 
 	setState(state){
 		this.state = this.formatter(state);
+
+		this.emit('state', this);
 	}
 }
 

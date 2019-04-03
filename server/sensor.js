@@ -1,6 +1,8 @@
 const uuid = require('uuid/v4');
 const EventEmitter = require('events');
 
+const log = require('log');
+
 function sumArr(arr){ return arr.reduce((total, num) => { return total + num; }); }
 
 function avgArr(arr){ return sumArr(arr) / arr.length; }
@@ -16,7 +18,7 @@ class Sensor extends EventEmitter {
 	}
 
 	defaultFormatter(val){
-		this.emit('state', val);
+		this.emit('state', this);
 
 		return val;
 	}

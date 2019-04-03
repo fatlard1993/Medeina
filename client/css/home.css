@@ -5,8 +5,6 @@ html {
 
 	body {
 		height: 100%;
-		border: 3px outset $grey-light;
-		border-radius: 5px;
 		overflow: hidden;
 		margin: 0;
 		background: $black;
@@ -67,15 +65,9 @@ button {
 	padding: 5px 25px;
 }
 
-div#content {
-	border: 2px solid $white;
-}
-
 div#wrapper {
 	position: relative;
 	height: 100%;
-	border: 1px solid $grey-darker;
-	border-radius: 2px;
 	box-sizing: border-box;
 	z-index: 1;
 }

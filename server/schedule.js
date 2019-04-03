@@ -1,5 +1,7 @@
 const EventEmitter = require('events');
 
+const log = require('log');
+
 function schedule(task, hour, min = 0, daysAway = 0){//todo make this support absolute or relative
 	var now = new Date();
 	var execution = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysAway, hour, min);
@@ -15,13 +17,13 @@ function schedule(task, hour, min = 0, daysAway = 0){//todo make this support ab
 	var hours = Math.abs(execution.getHours() - now.getHours());
 	var minutes = Math.abs(execution.getMinutes() - now.getMinutes());
 
-	console.log(`Task scheduled for ${hour}:${min >= 10 ? '' :'0'}${min} (${daysAway ? daysAway +' days ' : ''}${hours ? hours +' and hours ' : ''}${minutes ? minutes +' and minutes' : ''} in the future)`);
+	log(`Task scheduled for ${hour}:${min >= 10 ? '' :'0'}${min} (${daysAway ? daysAway +' days ' : ''}${hours ? hours +' and hours ' : ''}${minutes ? minutes +' and minutes' : ''} in the future)`);
 
 	return setTimeout(() => { task(task); }, ms);
 }
 
 function scheduleReoccurring(task, minutes, hours = 0){//todo make this support absolute or relative
-	console.log(`Task scheduled for every ${hours ? hours +' hours and ' : ''}${minutes} minutes in the future`);
+	log(`Task scheduled for every ${hours ? hours +' hours and ' : ''}${minutes} minutes in the future`);
 
 	return setInterval(task, (hours * 6e6) + (minutes * 6e4));
 }

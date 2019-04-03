@@ -2,13 +2,12 @@ const uuid = require('uuid/v4');
 
 const EventEmitter = require('events');
 const serialport = require('serialport');
+const log = require('log');
 
 const Hub = require('./hub');
 
-const DBG = 0;
-
 class Slave extends EventEmitter {
-  constructor(name, settings){
+  constructor(name, settings = {}){
 		super();
 
 		this.id = uuid();
@@ -21,11 +20,11 @@ class Slave extends EventEmitter {
 
 	getSerialportList(done){
 		serialport.list(function(err, ports){
-			if(err) return console.error(err);
+			if(err) return log.error(err);
 
 			ports = ports.map((item) => { return item.manufacturer && item.comName; }).filter((item) => { return item !== undefined; });
 
-			if(!done || DBG) console.log('\nFound serialports: ', ports);
+			log(1)('\nFound serialports: ', ports);
 
 			if(done) done(ports);
 		});
@@ -44,7 +43,7 @@ class Slave extends EventEmitter {
 
 		this.hubs[path].on('disconnect', () => { delete this.hubs[path]; });
 
-		this.hubs[path].on('state', (thing) => { this.emit('state', this.hubs[path], thing); });
+		this.hubs[path].on('state', (thing) => { this.emit('state', thing); });
 	}
 }
 

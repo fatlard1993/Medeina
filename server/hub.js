@@ -9,7 +9,7 @@ const Sensor = require('./sensor');
 const Device = require('./device');
 
 class Hub extends EventEmitter {
-  constructor(path, settings){
+  constructor(path, settings = {}){
 		super();
 
 		this.id = uuid();
