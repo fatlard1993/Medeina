@@ -2,13 +2,17 @@
 
 const path = require('path');
 
+const args = require('yargs').argv;
 const findRoot = require('find-root');
 const rootFolder = findRoot(__dirname);
 
 process.chdir(rootFolder);
 
+//log args polyfill
+if(args.d) process.env.DBG = args.d;
+if(args.dev || args.dbg) process.env.COLOR = 1;
+
 const log = require('log');
-const args = require('yargs').argv;
 const Config = require('config-manager');
 
 var config = new Config(path.resolve(rootFolder, 'config.json'), {
