@@ -11,14 +11,10 @@
 
 #define out_fan 2
 #define out_alarm 3
-#define out_red 13
-#define out_green 9
-#define out_yellow 8
-#define out_orange 7
-#define out_brown 6
-#define out_grey 5
-#define out_blue 4
-// #define out_purple 2
+#define out_red 9
+#define out_brown 8
+#define out_green 7
+#define out_grey 6
 
 #define light_update_frequency 2000
 #define temp_humidity_update_frequency 3000
@@ -123,28 +119,28 @@ void send_temp_humidity_lara_hot_side(){
 	send("humidity_lara_hot_side", String(humidity_lara_hot_side_state));
 }
 
-void send_yellow(){
-	bool state = digitalRead(out_yellow);
-
-	send("yellow", String(!state));
-}
-
-void send_blue(){
-	bool state = digitalRead(out_blue);
-
-	send("blue", String(!state));
-}
-
 void send_brown(){
 	bool state = digitalRead(out_brown);
 
-	send("brown", String(!state));
+	send("brown", String(state));
+}
+
+void send_red(){
+	bool state = digitalRead(out_red);
+
+	send("red", String(state));
+}
+
+void send_grey(){
+	bool state = digitalRead(out_grey);
+
+	send("grey", String(state));
 }
 
 void send_green(){
 	bool state = digitalRead(out_green);
 
-	send("green", String(!state));
+	send("green", String(state));
 }
 
 void send_fan(){
@@ -160,9 +156,9 @@ void sendStates(){
 	send_motion();
 	send_button();
 	send_light();
-	send_yellow();
-	send_blue();
 	send_brown();
+	send_red();
+	send_grey();
 	send_green();
 	send_fan();
 }
@@ -179,10 +175,8 @@ void handleCommands(){
 		send("things", "{\"temp_lara_cool_side\":\"in\",\"humidity_lara_cool_side\":\"in\"}");
 		send("things", "{\"temp_lara_hot_side\":\"in\",\"humidity_lara_hot_side\":\"in\"}");
 		send("things", "{\"fan\":\"out\"}");
-		send("things", "{\"yellow\":\"out\",\"brown\":\"out\",\"blue\":\"out\"}");
+		send("things", "{\"brown\":\"out\",\"red\":\"out\",\"grey\":\"out\"}");
 		send("things", "{\"green\":\"out\"}");
-		// send("things", "{\"purple\":\"out\"}");
-		// send("things", "{\"red\":\"out\",\"grey\":\"out\",\"orange\":\"out\"}");
 
 		sendString("connected", hub_name);
 
@@ -195,50 +189,50 @@ void handleCommands(){
 		sendStates();
 	}
 
-	else if(strcmp(receivedChars, "yellow 0") == 0){
-		digitalWrite(out_yellow, HIGH);
-
-		send_yellow();
-	}
-
-	else if(strcmp(receivedChars, "yellow 1") == 0){
-		digitalWrite(out_yellow, LOW);
-
-		send_yellow();
-	}
-
-	else if(strcmp(receivedChars, "blue 0") == 0){
-		digitalWrite(out_blue, HIGH);
-
-		send_blue();
-	}
-
-	else if(strcmp(receivedChars, "blue 1") == 0){
-		digitalWrite(out_blue, LOW);
-
-		send_blue();
-	}
-
 	else if(strcmp(receivedChars, "brown 0") == 0){
-		digitalWrite(out_brown, HIGH);
-
-		send_brown();
-	}
-
-	else if(strcmp(receivedChars, "brown 1") == 0){
 		digitalWrite(out_brown, LOW);
 
 		send_brown();
 	}
 
+	else if(strcmp(receivedChars, "brown 1") == 0){
+		digitalWrite(out_brown, HIGH);
+
+		send_brown();
+	}
+
+	else if(strcmp(receivedChars, "red 0") == 0){
+		digitalWrite(out_red, LOW);
+
+		send_red();
+	}
+
+	else if(strcmp(receivedChars, "red 1") == 0){
+		digitalWrite(out_red, HIGH);
+
+		send_red();
+	}
+
+	else if(strcmp(receivedChars, "grey 0") == 0){
+		digitalWrite(out_grey, LOW);
+
+		send_grey();
+	}
+
+	else if(strcmp(receivedChars, "grey 1") == 0){
+		digitalWrite(out_grey, HIGH);
+
+		send_grey();
+	}
+
 	else if(strcmp(receivedChars, "green 0") == 0){
-		digitalWrite(out_green, HIGH);
+		digitalWrite(out_green, LOW);
 
 		send_green();
 	}
 
 	else if(strcmp(receivedChars, "green 1") == 0){
-		digitalWrite(out_green, LOW);
+		digitalWrite(out_green, HIGH);
 
 		send_green();
 	}
@@ -352,13 +346,10 @@ void setup(){
   pinMode(out_fan, OUTPUT);
   pinMode(out_alarm, OUTPUT);
   pinMode(out_red, OUTPUT);
-  pinMode(out_green, OUTPUT);
-  pinMode(out_yellow, OUTPUT);
-  pinMode(out_orange, OUTPUT);
   pinMode(out_brown, OUTPUT);
+  pinMode(out_red, OUTPUT);
   pinMode(out_grey, OUTPUT);
-  pinMode(out_blue, OUTPUT);
-  // pinMode(out_purple, OUTPUT);
+  pinMode(out_green, OUTPUT);
 }
 
 void loop(){
