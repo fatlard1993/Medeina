@@ -3,8 +3,8 @@
 #define DBG false
 
 #define sensor_light A0
-#define sensor_motion A1
-#define sensor_button A3
+#define sensor_button A1
+#define sensor_motion 2
 #define sensor_temp_humidity_office 10
 #define sensor_temp_humidity_lara_cool_side 11
 #define sensor_temp_humidity_lara_hot_side 12
