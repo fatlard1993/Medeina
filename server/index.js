@@ -117,6 +117,20 @@ master.on('state', (thing) => {
 			log(`lara heat on | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 	}
+
+	else if(thing.name === 'temp_lara_cool_side'){
+		if(thing.state < master.settings.lara.minTempCoolSide && master.things.grey){
+			master.useDevice('grey', 0);
+
+			log(`lara fan off | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+		}
+
+		else if(thing.state > master.settings.lara.maxTempCoolSide && !master.things.grey){
+			master.useDevice('grey', 1);
+
+			log(`lara fan on | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+		}
+	}
 });
 
 
