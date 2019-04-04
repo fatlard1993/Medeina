@@ -2,6 +2,8 @@
 
 .vscode/c_cpp_properties.json
 
+.vscode/ipch
+
 config.json
 
 package-lock.json
