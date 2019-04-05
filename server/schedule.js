@@ -2,6 +2,19 @@ const EventEmitter = require('events');
 
 const log = require('log');
 
+function gradientUnit(unit, unitScale, refMin, refMax, outMin, outMax){//only need to gradient the duration not the actual times
+	var unitsPerOutput = (outMax - outMin) / unitScale;
+
+	if(unit >= refMax) return outMax - ((unit - refMax) * unitsPerOutput);
+	else return outMin + ((unit - refMin) * unitsPerOutput);
+}
+
+function convertNumberScale(input, inputLow, inputHigh, outputLow, outputHigh, clamp){
+	if(clamp) input = Math.min(inputHigh, Math.max(inputLow, input));
+
+	return (((input - inputLow) / (inputHigh - inputLow)) * (outputHigh - outputLow)) + outputLow;
+}
+
 function schedule(task, hour, min = 0, daysAway = 0){//todo make this support absolute or relative
 	var now = new Date();
 	var execution = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysAway, hour, min);
