@@ -9,7 +9,6 @@
 #define sensor_temp_humidity_lara_cool_side 11
 #define sensor_temp_humidity_lara_hot_side 12
 
-#define out_fan 2
 #define out_alarm 3
 #define out_red 9
 #define out_brown 8
@@ -97,7 +96,7 @@ void send_light(){
 }
 
 void send_button(){
-	send("button", String(button_state));
+	send("button", String(!button_state));
 }
 
 void send_motion(){
@@ -143,12 +142,6 @@ void send_green(){
 	send("green", String(state));
 }
 
-void send_fan(){
-	bool state = digitalRead(out_fan);
-
-	send("fan", String(state));
-}
-
 void sendStates(){
 	send_temp_humidity_office();
 	send_temp_humidity_lara_cool_side();
@@ -160,7 +153,6 @@ void sendStates(){
 	send_red();
 	send_grey();
 	send_green();
-	send_fan();
 }
 
 void handleCommands(){
@@ -174,7 +166,6 @@ void handleCommands(){
 		send("things", "{\"temp_office\":\"in\",\"humidity_office\":\"in\"}");
 		send("things", "{\"temp_lara_cool_side\":\"in\",\"humidity_lara_cool_side\":\"in\"}");
 		send("things", "{\"temp_lara_hot_side\":\"in\",\"humidity_lara_hot_side\":\"in\"}");
-		send("things", "{\"fan\":\"out\"}");
 		send("things", "{\"brown\":\"out\",\"red\":\"out\",\"grey\":\"out\"}");
 		send("things", "{\"green\":\"out\"}");
 
@@ -235,18 +226,6 @@ void handleCommands(){
 		digitalWrite(out_green, HIGH);
 
 		send_green();
-	}
-
-	else if(strcmp(receivedChars, "fan 0") == 0){
-		digitalWrite(out_fan, LOW);
-
-		send_fan();
-	}
-
-	else if(strcmp(receivedChars, "fan 1") == 0){
-		digitalWrite(out_fan, HIGH);
-
-		send_fan();
 	}
 
 	newData = false;
@@ -343,7 +322,6 @@ void setup(){
   pinMode(sensor_button, INPUT);
   pinMode(sensor_motion, INPUT);
 
-  pinMode(out_fan, OUTPUT);
   pinMode(out_alarm, OUTPUT);
   pinMode(out_red, OUTPUT);
   pinMode(out_brown, OUTPUT);
