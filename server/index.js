@@ -105,28 +105,28 @@ master.on('state', (thing) => {
 	log(1)(thing.name, thing.state);
 
 	if(thing.name === 'temp_lara_hot_side'){
-		if(thing.state > master.settings.lara.maxTempHotSide && master.things.brown){
-			master.useDevice('brown', 0);
+		if(thing.state > master.settings.lara.maxTempHotSide && master.things.lara_heat){
+			master.useDevice('lara_heat', 0);
 
 			log(`lara heat off | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 
-		else if(thing.state < master.settings.lara.minTempHotSide && !master.things.brown){
-			master.useDevice('brown', 1);
+		else if(thing.state < master.settings.lara.minTempHotSide && !master.things.lara_heat){
+			master.useDevice('lara_heat', 1);
 
 			log(`lara heat on | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 	}
 
 	else if(thing.name === 'temp_lara_cool_side'){
-		if(thing.state < master.settings.lara.minTempCoolSide && master.things.grey){
-			master.useDevice('grey', 0);
+		if(thing.state < master.settings.lara.minTempCoolSide && master.things.lara_fan){
+			master.useDevice('lara_fan', 0);
 
 			log(`lara fan off | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}
 
-		else if(thing.state > master.settings.lara.maxTempCoolSide && !master.things.grey){
-			master.useDevice('grey', 1);
+		else if(thing.state > master.settings.lara.maxTempCoolSide && !master.things.lara_fan){
+			master.useDevice('lara_fan', 1);
 
 			log(`lara fan on | temp: ${thing.state} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 		}

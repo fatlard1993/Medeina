@@ -10,10 +10,10 @@
 #define sensor_temp_humidity_lara_hot_side 12
 
 #define out_alarm 3
-#define out_red 9
-#define out_brown 8
+#define out_desk_light 9
+#define out_lara_heat 8
 #define out_green 7
-#define out_grey 6
+#define out_lara_fan 6
 
 #define light_update_frequency 2000
 #define temp_humidity_update_frequency 3000
@@ -118,22 +118,22 @@ void send_temp_humidity_lara_hot_side(){
 	send("humidity_lara_hot_side", String(humidity_lara_hot_side_state));
 }
 
-void send_brown(){
-	bool state = digitalRead(out_brown);
+void send_lara_heat(){
+	bool state = digitalRead(out_lara_heat);
 
-	send("brown", String(state));
+	send("lara_heat", String(state));
 }
 
-void send_red(){
-	bool state = digitalRead(out_red);
+void send_desk_light(){
+	bool state = digitalRead(out_desk_light);
 
-	send("red", String(state));
+	send("desk_light", String(state));
 }
 
-void send_grey(){
-	bool state = digitalRead(out_grey);
+void send_lara_fan(){
+	bool state = digitalRead(out_lara_fan);
 
-	send("grey", String(state));
+	send("lara_fan", String(state));
 }
 
 void send_green(){
@@ -149,9 +149,9 @@ void sendStates(){
 	send_motion();
 	send_button();
 	send_light();
-	send_brown();
-	send_red();
-	send_grey();
+	send_lara_heat();
+	send_desk_light();
+	send_lara_fan();
 	send_green();
 }
 
@@ -166,7 +166,7 @@ void handleCommands(){
 		send("things", "{\"temp_office\":\"in\",\"humidity_office\":\"in\"}");
 		send("things", "{\"temp_lara_cool_side\":\"in\",\"humidity_lara_cool_side\":\"in\"}");
 		send("things", "{\"temp_lara_hot_side\":\"in\",\"humidity_lara_hot_side\":\"in\"}");
-		send("things", "{\"brown\":\"out\",\"red\":\"out\",\"grey\":\"out\"}");
+		send("things", "{\"lara_heat\":\"out\",\"desk_light\":\"out\",\"lara_fan\":\"out\"}");
 		send("things", "{\"green\":\"out\"}");
 
 		sendString("connected", hub_name);
@@ -180,40 +180,40 @@ void handleCommands(){
 		sendStates();
 	}
 
-	else if(strcmp(receivedChars, "brown 0") == 0){
-		digitalWrite(out_brown, LOW);
+	else if(strcmp(receivedChars, "lara_heat 0") == 0){
+		digitalWrite(out_lara_heat, LOW);
 
-		send_brown();
+		send_lara_heat();
 	}
 
-	else if(strcmp(receivedChars, "brown 1") == 0){
-		digitalWrite(out_brown, HIGH);
+	else if(strcmp(receivedChars, "lara_heat 1") == 0){
+		digitalWrite(out_lara_heat, HIGH);
 
-		send_brown();
+		send_lara_heat();
 	}
 
-	else if(strcmp(receivedChars, "red 0") == 0){
-		digitalWrite(out_red, LOW);
+	else if(strcmp(receivedChars, "desk_light 0") == 0){
+		digitalWrite(out_desk_light, LOW);
 
-		send_red();
+		send_desk_light();
 	}
 
-	else if(strcmp(receivedChars, "red 1") == 0){
-		digitalWrite(out_red, HIGH);
+	else if(strcmp(receivedChars, "desk_light 1") == 0){
+		digitalWrite(out_desk_light, HIGH);
 
-		send_red();
+		send_desk_light();
 	}
 
-	else if(strcmp(receivedChars, "grey 0") == 0){
-		digitalWrite(out_grey, LOW);
+	else if(strcmp(receivedChars, "lara_fan 0") == 0){
+		digitalWrite(out_lara_fan, LOW);
 
-		send_grey();
+		send_lara_fan();
 	}
 
-	else if(strcmp(receivedChars, "grey 1") == 0){
-		digitalWrite(out_grey, HIGH);
+	else if(strcmp(receivedChars, "lara_fan 1") == 0){
+		digitalWrite(out_lara_fan, HIGH);
 
-		send_grey();
+		send_lara_fan();
 	}
 
 	else if(strcmp(receivedChars, "green 0") == 0){
@@ -323,10 +323,9 @@ void setup(){
   pinMode(sensor_motion, INPUT);
 
   pinMode(out_alarm, OUTPUT);
-  pinMode(out_red, OUTPUT);
-  pinMode(out_brown, OUTPUT);
-  pinMode(out_red, OUTPUT);
-  pinMode(out_grey, OUTPUT);
+  pinMode(out_lara_heat, OUTPUT);
+  pinMode(out_desk_light, OUTPUT);
+  pinMode(out_lara_fan, OUTPUT);
   pinMode(out_green, OUTPUT);
 }
 
