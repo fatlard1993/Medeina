@@ -133,23 +133,23 @@ master.on('state', (thing) => {
 	}
 
 	else if(thing.name === 'button' && thing.state){
-		master.useDevice('red', master.things.red ? '0' : '1');
+		master.useDevice('desk_light', master.things.desk_light ? '0' : '1');
 
-		log(`office light ${master.things.red ? 'off' : 'on'} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
+		log(`office light ${master.things.desk_light ? 'off' : 'on'} | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 	}
 
 	// else if(thing.name === 'motion'){
 	// 	clearTimeout(master.settings.office.deskLightTimeout);
 
 	// 	if(thing.state){// && !hub.things.motion.state
-	// 		master.useDevice('red', 1);
+	// 		master.useDevice('desk_light', 1);
 
 	// 		log(`office light on | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 	// 	}
 
 	// 	else if(!thing.state){// && hub.things.motion.state
 	// 		master.settings.office.deskLightTimeout = setTimeout(() => {
-	// 		master.useDevice('red', 0);
+	// 		master.useDevice('desk_light', 0);
 
 	// 			log(`office light off | time: ${new Date().getHours()}:${new Date().getMinutes()}`);
 	// 		}, master.settings.office.lightDelayMinutes * 6e4);
