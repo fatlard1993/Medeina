@@ -124,7 +124,7 @@ const dataLogger = {
 
 		fs.writeFileSync(path.join(rootFolder, `logs/${util.parseDateString('%m-%d-%y')}.json`), JSON.stringify(dataLogger.data));
 
-		dataLogger.data = { labels: [], series: [] };
+		dataLogger.data = { labels: [], datasets: [] };
 	}
 };
 
