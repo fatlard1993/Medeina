@@ -18,7 +18,15 @@ const dashboard = {
 		dashboard.chart = new Chart(document.getElementById('chart').getContext('2d'), {
 			type: 'line',
 			options: {
-				fill: false
+				title: {
+					display: true,
+					text: 'Todays Temps'
+				},
+				fill: false,
+				tooltips: {
+					intersect: false,
+					mode: 'index'
+				}
 			}
 		});
 
