@@ -15,14 +15,12 @@ const dashboard = {
 		}
 	},
 	init: function(){
-		dashboard.chart = new Chart(document.getElementById('chart').getContext('2d'), {
+		dashboard.chart = new Chart(dom.getElemById('chart').getContext('2d'), {
 			type: 'line',
 			options: {
-				title: {
-					display: true,
-					text: 'Todays Temps'
-				},
 				fill: false,
+				responsive: true,
+				maintainAspectRatio: false,
 				tooltips: {
 					intersect: false,
 					mode: 'index'
@@ -62,6 +60,8 @@ const dashboard = {
 			dashboard.chart.data.labels = data.labels;
 			dashboard.chart.data.datasets = data.datasets;
 
+			dashboard.fitChart();
+
 			dashboard.chart.update();
 		});
 
@@ -72,6 +72,8 @@ const dashboard = {
 			dashboard.chart.data.datasets.forEach((dataset) => {
 				dataset.data.push(data.readings[dataset.id]);
 			});
+
+			dashboard.fitChart();
 
 			dashboard.chart.update();
 		});
@@ -111,6 +113,14 @@ const dashboard = {
 		if(!dashboard.statusElements[device.id]) dashboard.statusElements[device.id] = dom.createElem('div', { appendTo: status });
 
 		dashboard.statusElements[device.id].textContent = `${dashboard.devicePreferences[device.id].label || device.id} : ${device.state}`;
+	},
+	fitChart: function(){
+		var minWidth = dashboard.chart.data.labels.length * 15;
+
+		if(minWidth > document.body.clientWidth){
+			dom.getElemById('chartContainer').style.width = minWidth +'px';
+			dashboard.chart.chart.canvas.width = minWidth;
+		}
 	}
 };
 

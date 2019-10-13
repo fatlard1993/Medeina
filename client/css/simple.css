@@ -87,5 +87,12 @@ div#content {
 }
 
 div#chartWrapper {
+	position: relative;
+	width: 100%;
 	overflow: auto;
+
+	div#chartContainer {
+		position: relative;
+		height: 300px;
+	}
 }
