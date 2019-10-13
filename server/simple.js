@@ -126,7 +126,7 @@ const dataLogger = {
 
 		fsExtended.mkdir(path.join(rootFolder, 'logs'));
 
-		log('saving day log', dataLogger.data.labels.length, file);
+		log('Saving day log', dataLogger.data.labels.length, file);
 
 		fs.writeFileSync(file, JSON.stringify(dataLogger.data));
 
@@ -185,7 +185,7 @@ app.get('/home', function(req, res, next){
 
 socketServer.registerEndpoints({
 	client_connect: function(){
-		log('client_connect', dataLogger.data, dataLogger.readings);
+		log(2)('client_connect', dataLogger.data, dataLogger.readings);
 
 		socketServer.broadcast('logData', dataLogger.data);
 
@@ -196,7 +196,7 @@ socketServer.registerEndpoints({
 stdin.addListener('data', function(data){
 	var cmd = data.toString().trim();
 
-	log(`CMD: ${cmd}`);
+	log(1)(`CMD: ${cmd}`);
 
 	if(cmd.startsWith('v ')){
 		process.env.DBG = parseInt(cmd.replace('v ', ''));
