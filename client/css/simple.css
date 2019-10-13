@@ -1,0 +1,91 @@
+// includes dom colors fonts notify menu dialog menuTheme
+
+html {
+	height: 100%;
+
+	body {
+		height: 100%;
+		overflow: hidden;
+		margin: 0;
+		background: $black;
+	}
+
+	* {
+		font-family: "Source Sans Pro", sans-serif;
+		touch-action: manipulation;
+		-webkit-text-size-adjust: none;
+	}
+
+	*:not(input) {
+		cursor: default;
+		-webkit-tap-highlight-color: $transparent;
+		-webkit-touch-callout: none;
+		user-select: none;
+	}
+
+	button {
+		cursor: pointer;
+	}
+
+	.selectable {
+		cursor: text;
+		-webkit-tap-highlight-color: initial;
+		user-select: text;
+	}
+}
+
+
+input[type="text"], input[type="password"], input[type="number"], select {
+	background: $white;
+	color: $grey-darkest;
+	border: 2px solid $grey-dark;
+	border-radius: 3px;
+	text-indent: 2px;
+	opacity: 0.7;
+	line-height: 20px;
+	height: 26px;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, select:focus, button:focus {
+	border-color: $teal-dark;
+	opacity: 1;
+}
+
+body {
+	background-color: $grey-darkest;
+	color: $white;
+	font-size: 20px;
+}
+
+button {
+	cursor: pointer;
+	border: 2px outset rgba(66, 66, 66, 0.6);
+	font-size: 18px;
+	border-radius: 2px;
+	padding: 5px 25px;
+}
+
+div#wrapper {
+	position: relative;
+	height: 100%;
+	box-sizing: border-box;
+	z-index: 1;
+}
+
+div#content {
+	position: relative;
+	height: 100%;
+
+	a.link {
+		display: inline-block;
+		font-size: 20px;
+		text-decoration: none;
+		width: 47%;
+		margin: 1% 1.25%;
+		padding: 1% 0;
+	}
+}
+
+div#chartWrapper {
+	overflow: auto;
+}

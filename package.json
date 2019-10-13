@@ -21,23 +21,24 @@
   },
   "devDependencies": {
     "eslint-config-rules": "github:fatlard1993/eslint-config-rules#2.x.x",
-    "babel-eslint": "^10.0.1",
-    "eslint": "^5.16.0"
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.5.1"
   },
   "dependencies": {
+    "chart.js": "^2.8.0",
     "config-manager": "github:fatlard1993/config-manager#2.x.x",
+    "dialog": "github:fatlard1993/dialog#2.x.x",
     "dom": "github:fatlard1993/dom#2.x.x",
-    "http-server": "github:fatlard1993/http-server#3.x.x",
+    "http-server": "github:fatlard1993/http-server#4.x.x",
     "js-util": "github:fatlard1993/js-util#2.x.x",
     "log": "github:fatlard1993/log#2.x.x",
     "menu": "github:fatlard1993/menu#2.x.x",
     "notify": "github:fatlard1993/notify#2.x.x",
-    "dialog": "github:fatlard1993/dialog#2.x.x",
-    "serialport": "^7.1.4",
-    "serve-static": "^1.13.2",
+    "serialport": "^7.1.5",
+    "serve-static": "^1.14.1",
     "socket-client": "github:fatlard1993/socket-client#2.x.x",
-    "uuid": "^3.3.2",
+    "uuid": "^3.3.3",
     "websocket-server": "github:fatlard1993/websocket-server#2.x.x",
-    "yargs": "^13.2.2"
+    "yargs": "^14.2.0"
   }
 }
