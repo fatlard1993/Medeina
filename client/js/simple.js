@@ -2,6 +2,8 @@
 // babel
 /* global util dom log socketClient Chart */
 
+// todo add preference editor dialog, preferences should be stored on the server
+
 const dashboard = {
 	statusElements: {},
 	devicePreferences: {

@@ -75,7 +75,7 @@ const dataLogger = {
 
 		var lastReading = dataLogger.readings[id][dataLogger.readings[id].length - 2];
 
-		if(value < lastReading - 20 || value > lastReading + 20) log.warn('Suspicious reading: ', value, new Date());
+		if(lastReading && (value < lastReading - 20 || value > lastReading + 20)) log.warn('Suspicious reading: ', value, lastReading, new Date());
 
 		dataLogger.readings[id].push(value);
 
