@@ -109,16 +109,11 @@ void receive(){
 void handleCommands(){
 	if(newData == false) return;
 
-	if(strcmp(receivedChars, "OUTLET_1 0") == 0){
-		digitalWrite(OUTLET_1, LOW);
+	if(receivedChars.startsWith("OUTLET_1")){
+		digitalWrite(OUTLET_1, receivedChars.endsWith("0") ? LOW : HIGH);
 
-		Serial.println("OUTLET_1 0")
-	}
-
-	else if(strcmp(receivedChars, "OUTLET_1 1") == 0){
-		digitalWrite(OUTLET_1, HIGH);
-
-		Serial.println("OUTLET_1 1")
+		Serial.print("OUTLET_1 ");
+		Serial.println(receivedChars.endsWith("0") ? "0" : "1");
 	}
 
 	newData = false;
