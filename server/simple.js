@@ -73,9 +73,11 @@ const dataLogger = {
 	add: function(id, value){
 		dataLogger.readings[id] = dataLogger.readings[id] || [];
 
-		dataLogger.readings[id].push(value);
+		var lastReading = dataLogger.readings[id][dataLogger.readings[id].length - 2];
 
-		if(value < dataLogger.readings[id][dataLogger.readings[id].length - 1] - 10) log.warn('Suspicious reading: ', value, new Date());
+		if(value < lastReading - 20 || value > lastReading + 20) log.warn('Suspicious reading: ', value, new Date());
+
+		dataLogger.readings[id].push(value);
 
 		dataLogger.pretty();
 	},
@@ -153,8 +155,8 @@ dataLogger.loadDayLog();
 parser.on('data', (data) => {
 	data = data.toString();
 
-	if(/^([0-9A-F]{16})\sC\s(\d+\.\d+)\sF\s(\d+\.\d+)/.test(data)){
-		data = /^([0-9A-F]{16})\sC\s(\d+\.\d+)\sF\s(\d+\.\d+)/.exec(data);
+	if(/^([0-9A-F]{16})\sC\s(-?\d+\.\d+)\sF\s(-?\d+\.\d+)/.test(data)){
+		data = /^([0-9A-F]{16})\sC\s(-?\d+\.\d+)\sF\s(-?\d+\.\d+)/.exec(data);
 
 		data = {
 			id: data[1],
@@ -170,7 +172,7 @@ parser.on('data', (data) => {
 		dataLogger.add(data.id, parseFloat(data.tempF).toFixed(1));
 	}
 
-	else log(data);
+	else log('Unhandled Arduino response', data);
 });
 
 const stdin = process.openStdin();

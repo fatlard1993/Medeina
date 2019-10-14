@@ -26,7 +26,7 @@ const dashboard = {
 					mode: 'index'
 				},
 				animation: {
-					easing: 'easeOutBounce'
+					easing: 'easeOutCirc'
 				}
 			}
 		});
