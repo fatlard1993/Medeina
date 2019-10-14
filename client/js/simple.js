@@ -1,6 +1,6 @@
-// includes dom log socket-client menu dialog chart.js js-util
+// includes js-util dom log socket-client chart.js
 // babel
-/* global dom log socketClient menu dialog Chart util */
+/* global util dom log socketClient Chart */
 
 const dashboard = {
 	statusElements: {},
@@ -83,29 +83,6 @@ const dashboard = {
 
 			dashboard.updateStatus({ id: reading.id, state: reading.reading });
 		});
-
-		// menu.init({
-		// 	main: ['test', 'test2:~:red']
-		// }, { discardDirection: 'static' });
-
-		// dom.interact.on('pointerUp', function(evt){
-		// 	log()('interact pointerUp', evt);
-
-		// 	if(evt.pointerType === 'mouse' && evt.which === 3){
-		// 		menu.open('main');
-
-		// 		menu.elem.style.top = (evt.clientY >= document.body.clientHeight - menu.elem.clientHeight ? evt.clientY - menu.elem.clientHeight : evt.clientY) +'px';
-		// 		menu.elem.style.left = (evt.clientX >= document.body.clientWidth - menu.elem.clientWidth ? evt.clientX - menu.elem.clientWidth : evt.clientX) +'px';
-		// 	}
-
-		// 	else if(menu.isOpen) menu.close();
-		// });
-
-		// menu.on('selection', function(evt){
-		// 	log(this.isOpen, evt);
-
-		// 	dialog.err('test err');
-		// });
 	},
 	updateStatus: function(device){
 		var status = dom.getElemById('status');

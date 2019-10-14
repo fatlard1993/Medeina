@@ -8,10 +8,11 @@ OneWire oneWire(ONE_WIRE_BUS);
 
 DallasTemperature sensors(&oneWire);
 
-DeviceAddress temp1, temp2;
+DeviceAddress temp1, temp2, temp3;
 
 // DeviceAddress temp1 = { 0x28, 0x1D, 0x39, 0x31, 0x2, 0x0, 0x0, 0xF0 };
 // DeviceAddress temp2   = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x2 };
+// DeviceAddress temp3   = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x2 };
 
 void setup(void)
 {
@@ -28,8 +29,9 @@ void setup(void)
   if(sensors.isParasitePowerMode()) Serial.println("ON");
   else Serial.println("OFF");
 
-  if(!sensors.getAddress(temp1, 0)) Serial.println("Unable to find address for Device 0");
-  if(!sensors.getAddress(temp2, 1)) Serial.println("Unable to find address for Device 1");
+  if(!sensors.getAddress(temp1, 0)) Serial.println("Unable to find address for Device 1");
+  if(!sensors.getAddress(temp2, 1)) Serial.println("Unable to find address for Device 2");
+  if(!sensors.getAddress(temp3, 1)) Serial.println("Unable to find address for Device 3");
 }
 
 void printAddress(DeviceAddress deviceAddress){
@@ -64,4 +66,5 @@ void loop(void){
 
   printData(temp1);
   printData(temp2);
+  printData(temp3);
 }
