@@ -24,6 +24,9 @@ const dashboard = {
 				tooltips: {
 					intersect: false,
 					mode: 'index'
+				},
+				animation: {
+					easing: 'easeOutBounce'
 				}
 			}
 		});
