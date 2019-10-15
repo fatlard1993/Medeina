@@ -30,7 +30,7 @@ yargs.describe({
 	ver: 'Wraps --color ... Prints the version then exits',
 	v: '<level>',
 	p: '<port>',
-	dbg: 'Wraps --color --verbosity ... Sets up various stuff sends the dbg mode to the client pages',
+	dbg: 'Wraps --color --verbosity',
 	i: '<interval> This is the interval of minutes at which logs are quantized to'
 });
 
@@ -73,9 +73,11 @@ const dataLogger = {
 	add: function(id, value){
 		dataLogger.readings[id] = dataLogger.readings[id] || [];
 
+		value = parseFloat(value);
+
 		var lastReading = dataLogger.readings[id][dataLogger.readings[id].length - 2];
 
-		if(lastReading && (value < lastReading - 20 || value > lastReading + 20)) log.warn('Suspicious reading: ', value, lastReading, new Date());
+		if(lastReading && (value < lastReading - 20 || value > lastReading + 20)) log.warn(`Suspicious reading!\n Got: ${value}, Expected: ${lastReading - 20} - ${lastReading + 20}`, new Date());
 
 		dataLogger.readings[id].push(value);
 
@@ -124,33 +126,49 @@ const dataLogger = {
 	},
 	saveDayLog: function(){
 		var now = new Date();
-		var file = path.join(rootFolder, `logs/${util.parseDateString('%m-%d-%y', new Date(now.getFullYear(), now.getMonth(), now.getDate() - (now.getHours() === 0 && now.getMinutes() === 0 ? 1 : 0)))}.json`);
+		var eod = now.getHours() === 0 && now.getMinutes() === 0;
+		var file = path.join(rootFolder, `logs/${util.parseDateString('%m-%d-%y', new Date(now.getFullYear(), now.getMonth(), now.getDate() - (eod ? 1 : 0)))}.json`);
 
 		fsExtended.mkdir(path.join(rootFolder, 'logs'));
 
-		log('Saving day log', dataLogger.data.labels.length, file);
+		log(`Saving ${eod ? 'EOD' : 'day'} log to ${file} with ${dataLogger.data.labels.length} data points`);
 
 		fs.writeFileSync(file, JSON.stringify(dataLogger.data));
 
 		dataLogger.data = { labels: [], datasets: [] };
-	},
-	loadDayLog: function(){
-		var file = path.join(rootFolder, `logs/${util.parseDateString('%m-%d-%y')}.json`);
 
-		if(!fs.existsSync(file)) return log('no day log to load', file);
+		if(eod) dataLogger.broadcastAll();
+	},
+	loadDayLog: function(date){
+		var filename = util.parseDateString('%m-%d-%y', date), file = path.join(rootFolder, `logs/${filename}.json`);
+
+		if(!fs.existsSync(file)) return log('No day log to load', file);
 
 		try{
-			dataLogger.data = JSON.parse(fsExtended.catSync(file));
+			file = JSON.parse(fsExtended.catSync(file));
 
-			log('Loaded day log', dataLogger.data.labels.length, file);
+			log(`Loaded day log ${filename} | ${file.labels.length} data points`);
+			log(2)(file);
+
+			return file;
 		}
+
 		catch(err){
-			log.error(err);
+			log.error('Could not parse day log', err);
 		}
+	},
+	broadcastAll: function(){
+		var now = new Date();
+
+		socketServer.broadcast('logData', dataLogger.data);
+
+		socketServer.broadcast('oldLogData', dataLogger.loadDayLog(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)));
+
+		Object.keys(dataLogger.readings).forEach((id) => { socketServer.broadcast('currentReading', { id, reading: dataLogger.readings[id][dataLogger.readings[id].length - 1] +'F' }); });
 	}
 };
 
-dataLogger.loadDayLog();
+dataLogger.data = dataLogger.loadDayLog();
 
 parser.on('data', (data) => {
 	data = data.toString();
@@ -189,9 +207,12 @@ socketServer.registerEndpoints({
 	client_connect: function(){
 		log(2)('client_connect', dataLogger.data, dataLogger.readings);
 
-		socketServer.broadcast('logData', dataLogger.data);
+		// todo get a list of files in the log folder and send the dates to the connecting client
 
-		Object.keys(dataLogger.readings).forEach((id) => { socketServer.broadcast('currentReading', { id, reading: dataLogger.readings[id][dataLogger.readings[id].length - 1] +'F' }); });
+		dataLogger.broadcastAll();
+	},
+	getLog: function(date){
+		this.reply('oldLogData', dataLogger.loadDayLog(new Date(date)));
 	}
 });
 

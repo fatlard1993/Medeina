@@ -4,6 +4,8 @@
 
 // todo add preference editor dialog, preferences should be stored on the server
 
+// todo get a list of available log files and set the second chart window to view it via: socketClient.reply('getLog', '10-13-19');
+
 const dashboard = {
 	statusElements: {},
 	devicePreferences: {
@@ -19,10 +21,36 @@ const dashboard = {
 	init: function(){
 		dashboard.chart = new Chart(dom.getElemById('chart').getContext('2d'), {
 			type: 'line',
+			data: {},
 			options: {
 				fill: false,
 				responsive: true,
 				maintainAspectRatio: false,
+				title: {
+					display: true,
+					text: 'Todays Temps'
+				},
+				tooltips: {
+					intersect: false,
+					mode: 'index'
+				},
+				animation: {
+					easing: 'easeOutCirc'
+				}
+			}
+		});
+
+		dashboard.oldChart = new Chart(dom.getElemById('chart2').getContext('2d'), {
+			type: 'line',
+			data: {},
+			options: {
+				fill: false,
+				responsive: true,
+				maintainAspectRatio: false,
+				title: {
+					display: true,
+					text: 'Yesterdays Temps'
+				},
 				tooltips: {
 					intersect: false,
 					mode: 'index'
@@ -52,22 +80,27 @@ const dashboard = {
 		socketClient.on('logData', function(data){
 			log()('socketClient logData', data);
 
-			data.datasets.forEach((dataset) => {
-				var prefs = dashboard.devicePreferences[dataset.id];
-
-				if(!prefs) prefs = dashboard.devicePreferences[dataset.id] = {};
-
-				dataset.fill = false;
-				dataset.label = prefs.label || dataset.id;
-				dataset.borderColor = dataset.backgroundColor = prefs.color || util.stringToColor(dataset.label);
-			});
+			data = dashboard.applyDatasetPreferences(data);
 
 			dashboard.chart.data.labels = data.labels;
 			dashboard.chart.data.datasets = data.datasets;
 
-			dashboard.fitChart();
+			dashboard.fitCharts();
 
 			dashboard.chart.update();
+		});
+
+		socketClient.on('oldLogData', function(data){
+			log()('socketClient oldLogData', data);
+
+			data = dashboard.applyDatasetPreferences(data);
+
+			dashboard.oldChart.data.labels = data.labels;
+			dashboard.oldChart.data.datasets = data.datasets;
+
+			dashboard.fitCharts();
+
+			dashboard.oldChart.update();
 		});
 
 		socketClient.on('logUpdate', function(data){
@@ -78,7 +111,7 @@ const dashboard = {
 				dataset.data.push(data.readings[dataset.id]);
 			});
 
-			dashboard.fitChart();
+			dashboard.fitCharts();
 
 			dashboard.chart.update();
 		});
@@ -88,6 +121,8 @@ const dashboard = {
 
 			dashboard.updateStatus({ id: reading.id, state: reading.reading });
 		});
+
+		dom.maintenance.init([dashboard.fitCharts]);
 	},
 	updateStatus: function(device){
 		var status = dom.getElemById('status');
@@ -96,13 +131,36 @@ const dashboard = {
 
 		dashboard.statusElements[device.id].textContent = `${dashboard.devicePreferences[device.id].label || device.id} : ${device.state}`;
 	},
-	fitChart: function(){
+	fitCharts: function(){
+		var chartCanvas = dom.getElemById('chart');
+		var oldChartCanvas = dom.getElemById('chart2');
 		var minWidth = dashboard.chart.data.labels.length * 15;
+		var oldChartMinWidth = dashboard.oldChart.data.labels.length * 15;
 
 		if(minWidth > document.body.clientWidth){
-			dom.getElemById('chartContainer').style.width = minWidth +'px';
-			dashboard.chart.chart.canvas.width = minWidth;
+			chartCanvas.parentElement.style.width = minWidth +'px';
+			chartCanvas.height = '300';
+			chartCanvas.width = minWidth;
 		}
+
+		if(oldChartMinWidth > document.body.clientWidth){
+			oldChartCanvas.parentElement.style.width = oldChartMinWidth +'px';
+			oldChartCanvas.height = '300';
+			oldChartCanvas.width = oldChartMinWidth;
+		}
+	},
+	applyDatasetPreferences: function(data){
+		data.datasets.forEach((dataset) => {
+			var prefs = dashboard.devicePreferences[dataset.id];
+
+			if(!prefs) prefs = dashboard.devicePreferences[dataset.id] = {};
+
+			dataset.fill = false;
+			dataset.label = prefs.label || dataset.id;
+			dataset.borderColor = dataset.backgroundColor = prefs.color || util.stringToColor(dataset.label);
+		});
+
+		return data;
 	}
 };
 
