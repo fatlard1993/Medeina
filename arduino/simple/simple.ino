@@ -14,9 +14,13 @@ DallasTemperature sensors(&oneWire);
 
 DeviceAddress temp1, temp2, temp3;
 
+const byte numChars = 32;
+char receivedChars[numChars];
+bool newData = false;
+
 // DeviceAddress temp1 = { 0x28, 0x1D, 0x39, 0x31, 0x2, 0x0, 0x0, 0xF0 };
 // DeviceAddress temp2   = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x2 };
-// DeviceAddress temp3   = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x2 };
+// DeviceAddress temp3   = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x9 };
 
 void setup(void)
 {
@@ -40,7 +44,7 @@ void setup(void)
 
   if(!sensors.getAddress(temp1, 0)) Serial.println("Unable to find address for Device 1");
   if(!sensors.getAddress(temp2, 1)) Serial.println("Unable to find address for Device 2");
-  if(!sensors.getAddress(temp3, 1)) Serial.println("Unable to find address for Device 3");
+  if(!sensors.getAddress(temp3, 2)) Serial.println("Unable to find address for Device 3");
 
   sensors.setResolution(temp1, TEMPERATURE_PRECISION);
   sensors.setResolution(temp2, TEMPERATURE_PRECISION);
@@ -109,11 +113,11 @@ void receive(){
 void handleCommands(){
 	if(newData == false) return;
 
-	if(receivedChars.startsWith("OUTLET_1")){
-		digitalWrite(OUTLET_1, receivedChars.endsWith("0") ? LOW : HIGH);
+	if(String(receivedChars).startsWith("OUTLET_1")){
+		digitalWrite(OUTLET_1, String(receivedChars).endsWith("0") ? LOW : HIGH);
 
 		Serial.print("OUTLET_1 ");
-		Serial.println(receivedChars.endsWith("0") ? "0" : "1");
+		Serial.println(String(receivedChars).endsWith("0") ? "0" : "1");
 	}
 
 	newData = false;

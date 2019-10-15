@@ -23,8 +23,8 @@ const dashboard = {
 			type: 'line',
 			data: {},
 			options: {
+				spanGaps: true,
 				fill: false,
-				responsive: true,
 				maintainAspectRatio: false,
 				title: {
 					display: true,
@@ -35,7 +35,18 @@ const dashboard = {
 					mode: 'index'
 				},
 				animation: {
-					easing: 'easeOutCirc'
+					easing: 'easeOutCirc',
+					duration: 2000,
+					onProgress: function(animation){
+						// 	dom.getElemById('chartProgress').value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+						log()(`Animating... ${(animation.currentStep / animation.numSteps) * 100}%`);
+					},
+					onComplete: function(){
+						// window.setTimeout(() => {
+						// 	dom.getElemById('chartProgress').value = 0;
+						// }, 2000);
+						log()('done');
+					}
 				}
 			}
 		});
@@ -44,8 +55,8 @@ const dashboard = {
 			type: 'line',
 			data: {},
 			options: {
+				spanGaps: true,
 				fill: false,
-				responsive: true,
 				maintainAspectRatio: false,
 				title: {
 					display: true,
@@ -56,7 +67,18 @@ const dashboard = {
 					mode: 'index'
 				},
 				animation: {
-					easing: 'easeOutCirc'
+					easing: 'easeOutCirc',
+					duration: 2000,
+					onProgress: function(animation){
+						// 	dom.getElemById('chartProgress').value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+						log()(`Animating... ${(animation.currentStep / animation.numSteps) * 100}%`);
+					},
+					onComplete: function(){
+						// window.setTimeout(() => {
+						// 	dom.getElemById('chartProgress').value = 0;
+						// }, 2000);
+						log()('done');
+					}
 				}
 			}
 		});
@@ -85,9 +107,9 @@ const dashboard = {
 			dashboard.chart.data.labels = data.labels;
 			dashboard.chart.data.datasets = data.datasets;
 
-			dashboard.fitCharts();
-
 			dashboard.chart.update();
+
+			setTimeout(dashboard.fitCharts, 1000);
 		});
 
 		socketClient.on('oldLogData', function(data){
@@ -98,9 +120,9 @@ const dashboard = {
 			dashboard.oldChart.data.labels = data.labels;
 			dashboard.oldChart.data.datasets = data.datasets;
 
-			dashboard.fitCharts();
-
 			dashboard.oldChart.update();
+
+			setTimeout(dashboard.fitCharts, 1000);
 		});
 
 		socketClient.on('logUpdate', function(data){
@@ -111,9 +133,9 @@ const dashboard = {
 				dataset.data.push(data.readings[dataset.id]);
 			});
 
-			dashboard.fitCharts();
-
 			dashboard.chart.update();
+
+			setTimeout(dashboard.fitCharts, 1000);
 		});
 
 		socketClient.on('currentReading', function(reading){
@@ -129,25 +151,29 @@ const dashboard = {
 
 		if(!dashboard.statusElements[device.id]) dashboard.statusElements[device.id] = dom.createElem('div', { appendTo: status });
 
-		dashboard.statusElements[device.id].textContent = `${dashboard.devicePreferences[device.id].label || device.id} : ${device.state}`;
+		dashboard.statusElements[device.id].textContent = `${dashboard.devicePreferences[device.id] && dashboard.devicePreferences[device.id].label || device.id} : ${device.state}`;
 	},
 	fitCharts: function(){
 		var chartCanvas = dom.getElemById('chart');
 		var oldChartCanvas = dom.getElemById('chart2');
-		var minWidth = dashboard.chart.data.labels.length * 15;
-		var oldChartMinWidth = dashboard.oldChart.data.labels.length * 15;
+		var maxWidth = document.body.clientWidth;
+		var width = Math.max(dashboard.chart.data.labels.length * 15, maxWidth);
+		var oldChartWidth = Math.max(dashboard.oldChart.data.labels.length * 15, maxWidth);
 
-		if(minWidth > document.body.clientWidth){
-			chartCanvas.parentElement.style.width = minWidth +'px';
+		dom.animation.add('write', () => {
+			chartCanvas.parentElement.style.width = width +'px';
 			chartCanvas.height = '300';
-			chartCanvas.width = minWidth;
-		}
+			chartCanvas.width = width;
 
-		if(oldChartMinWidth > document.body.clientWidth){
-			oldChartCanvas.parentElement.style.width = oldChartMinWidth +'px';
+			oldChartCanvas.parentElement.style.width = oldChartWidth +'px';
 			oldChartCanvas.height = '300';
-			oldChartCanvas.width = oldChartMinWidth;
-		}
+			oldChartCanvas.width = oldChartWidth;
+
+			dom.animation.add('write', () => {
+				dashboard.chart.update();
+				dashboard.oldChart.update();
+			});
+		});
 	},
 	applyDatasetPreferences: function(data){
 		data.datasets.forEach((dataset) => {

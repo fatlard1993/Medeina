@@ -100,7 +100,7 @@ const dataLogger = {
 			readings[id] = reading = dataLogger.averageReading(dataLogger.readings[id]).toFixed(1);
 			dataLogger.data.datasets[x] = dataLogger.data.datasets[x] || { id, data: [] };
 
-			dataLogger.data.datasets[x].data.push(reading);
+			dataLogger.data.datasets[x].data[dataLogger.data.labels.length - 1] = reading;
 		}
 
 		socketServer.broadcast('logUpdate', { label, readings });
