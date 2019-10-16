@@ -88,14 +88,14 @@ div#content {
 }
 
 div#status {
-	padding: 32px;
+	padding: 20px;
+	font-size: 20px;
 }
 
 div.chartWrapper {
 	position: relative;
 	width: 100%;
 	overflow: auto;
-	margin-bottom: 20px;
 }
 
 div.chartContainer {
@@ -106,4 +106,37 @@ div.chartContainer {
 div.chartLabel {
 	font-size: 24px;
 	text-align: center;
+}
+
+@media (max-height: 700px) {
+	div#status {
+		padding: 10px;
+		font-size: 16px;
+	}
+
+	div.chartContainer {
+		height: 270px;
+	}
+
+	div.chartLabel {
+		font-size: 22px;
+	}
+}
+
+@media (max-height: 610px) {
+	div.chartContainer {
+		height: 200px;
+	}
+}
+
+@media (max-height: 500px) {
+	div.chartContainer {
+		height: 170px;
+	}
+}
+
+@media (max-height: 400px) {
+	div.chartContainer {
+		height: 140px;
+	}
 }
