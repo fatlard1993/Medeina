@@ -75,6 +75,7 @@ div#wrapper {
 div#content {
 	position: relative;
 	height: 100%;
+	overflow: auto;
 
 	a.link {
 		display: inline-block;
