@@ -86,13 +86,23 @@ div#content {
 	}
 }
 
+div#status {
+	padding: 32px;
+}
+
 div.chartWrapper {
 	position: relative;
 	width: 100%;
 	overflow: auto;
+	margin-bottom: 20px;
 }
 
 div.chartContainer {
 	position: relative;
 	height: 300px;
+}
+
+div.chartLabel {
+	font-size: 24px;
+	text-align: center;
 }

@@ -5,6 +5,7 @@
 // todo add preference editor dialog, preferences should be stored on the server
 
 // todo get a list of available log files and set the second chart window to view it via: socketClient.reply('getLog', '10-13-19');
+// todo support getting a dynamic range of data and resolution. the server will load the required files and average the datapoints to achieve the resolution
 
 const dashboard = {
 	statusElements: {},
@@ -27,23 +28,12 @@ const dashboard = {
 				fill: false,
 				maintainAspectRatio: false,
 				responsive: true,
-				title: {
-					display: true,
-					text: 'Todays Temps'
-				},
 				tooltips: {
 					intersect: false,
 					mode: 'index'
 				},
 				animation: {
-					easing: 'easeOutCirc',
-					duration: 2000,
-					onProgress: function(animation){
-						log(2)(`Animating... ${(animation.currentStep / animation.numSteps) * 100}%`);
-					},
-					onComplete: function(){
-						log(2)('done');
-					}
+					easing: 'easeOutCirc'
 				}
 			}
 		});
@@ -56,23 +46,12 @@ const dashboard = {
 				fill: false,
 				maintainAspectRatio: false,
 				responsive: true,
-				title: {
-					display: true,
-					text: 'Yesterdays Temps'
-				},
 				tooltips: {
 					intersect: false,
 					mode: 'index'
 				},
 				animation: {
-					easing: 'easeOutCirc',
-					duration: 2000,
-					onProgress: function(animation){
-						log(2)(`Animating... ${(animation.currentStep / animation.numSteps) * 100}%`);
-					},
-					onComplete: function(){
-						log(2)('done');
-					}
+					easing: 'easeOutCirc'
 				}
 			}
 		});
@@ -122,14 +101,20 @@ const dashboard = {
 		socketClient.on('logUpdate', function(data){
 			log()('socketClient logUpdate', data);
 
-			dashboard.chart.data.labels.push(data.label);
+			var chartContainer = dom.getElemById('chart').parentElement;
+			var scrollToEnd = chartContainer.parentElement.scrollLeft >= chartContainer.clientWidth - 1000;
+
+			dashboard.chart.data.labels.push(data.label);//if(dashboard.chart.data.labels[dashboard.chart.data.labels.length - 2] !== data.label)
+
 			dashboard.chart.data.datasets.forEach((dataset) => {
 				dataset.data.push(data.readings[dataset.id]);
 			});
 
 			dashboard.chart.update();
 
-			setTimeout(dashboard.fitCharts, 1000);
+			dashboard.fitCharts();
+
+			if(scrollToEnd) chartContainer.parentElement.scrollLeft = chartContainer.clientWidth;
 		});
 
 		socketClient.on('currentReading', function(reading){
@@ -154,9 +139,11 @@ const dashboard = {
 		var width = Math.max(dashboard.chart.data.labels.length * 15, maxWidth);
 		var oldChartWidth = Math.max(dashboard.oldChart.data.labels.length * 15, maxWidth);
 
-		chartCanvas.parentElement.style.width = width +'px';
+		dom.animation.add('write', function(){
+			chartCanvas.parentElement.style.width = width +'px';
 
-		oldChartCanvas.parentElement.style.width = oldChartWidth +'px';
+			oldChartCanvas.parentElement.style.width = oldChartWidth +'px';
+		});
 	},
 	applyDatasetPreferences: function(data){
 		data.datasets.forEach((dataset) => {

@@ -75,7 +75,7 @@ const dataLogger = {
 
 		value = parseFloat(value);
 
-		var lastReading = dataLogger.readings[id][dataLogger.readings[id].length - 2];
+		var lastReading = dataLogger.readings[id][dataLogger.readings[id].length - 1];
 
 		if(lastReading && (value < lastReading - 20 || value > lastReading + 20)) log.warn(`Suspicious reading!\n Got: ${value}, Expected: ${lastReading - 20} - ${lastReading + 20}`, new Date());
 
@@ -93,14 +93,15 @@ const dataLogger = {
 		var label = util.parseDateString('%H:%M', now);
 		var readings = {};
 
-		dataLogger.data.labels.push(label);
+		log(dataLogger.data);
+		dataLogger.data.labels.push(label); //if(dataLogger.data.labels[dataLogger.data.labels.length - 1] !== label)
 
 		for(var x = 0, arr = Object.keys(dataLogger.readings), count = arr.length, id, reading; x < count; ++x){
 			id = arr[x];
 			readings[id] = reading = dataLogger.averageReading(dataLogger.readings[id]).toFixed(1);
 			dataLogger.data.datasets[x] = dataLogger.data.datasets[x] || { id, data: [] };
 
-			dataLogger.data.datasets[x].data[dataLogger.data.labels.length - 1] = reading;
+			dataLogger.data.datasets[x].data.push(reading);
 		}
 
 		socketServer.broadcast('logUpdate', { label, readings });
@@ -142,7 +143,11 @@ const dataLogger = {
 	loadDayLog: function(date){
 		var filename = util.parseDateString('%m-%d-%y', date), file = path.join(rootFolder, `logs/${filename}.json`);
 
-		if(!fs.existsSync(file)) return log('No day log to load', file);
+		if(!fs.existsSync(file)){
+			log('No day log to load', file);
+
+			return { labels: [], datasets: [] };
+		}
 
 		try{
 			file = JSON.parse(fsExtended.catSync(file));
@@ -155,6 +160,8 @@ const dataLogger = {
 
 		catch(err){
 			log.error('Could not parse day log', err);
+
+			return { labels: [], datasets: [] };
 		}
 	},
 	broadcastAll: function(){
