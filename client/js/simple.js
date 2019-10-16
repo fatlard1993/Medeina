@@ -26,6 +26,7 @@ const dashboard = {
 				spanGaps: true,
 				fill: false,
 				maintainAspectRatio: false,
+				responsive: true,
 				title: {
 					display: true,
 					text: 'Todays Temps'
@@ -38,14 +39,10 @@ const dashboard = {
 					easing: 'easeOutCirc',
 					duration: 2000,
 					onProgress: function(animation){
-						// 	dom.getElemById('chartProgress').value = animation.animationObject.currentStep / animation.animationObject.numSteps;
-						log()(`Animating... ${(animation.currentStep / animation.numSteps) * 100}%`);
+						log(2)(`Animating... ${(animation.currentStep / animation.numSteps) * 100}%`);
 					},
 					onComplete: function(){
-						// window.setTimeout(() => {
-						// 	dom.getElemById('chartProgress').value = 0;
-						// }, 2000);
-						log()('done');
+						log(2)('done');
 					}
 				}
 			}
@@ -58,6 +55,7 @@ const dashboard = {
 				spanGaps: true,
 				fill: false,
 				maintainAspectRatio: false,
+				responsive: true,
 				title: {
 					display: true,
 					text: 'Yesterdays Temps'
@@ -70,14 +68,10 @@ const dashboard = {
 					easing: 'easeOutCirc',
 					duration: 2000,
 					onProgress: function(animation){
-						// 	dom.getElemById('chartProgress').value = animation.animationObject.currentStep / animation.animationObject.numSteps;
-						log()(`Animating... ${(animation.currentStep / animation.numSteps) * 100}%`);
+						log(2)(`Animating... ${(animation.currentStep / animation.numSteps) * 100}%`);
 					},
 					onComplete: function(){
-						// window.setTimeout(() => {
-						// 	dom.getElemById('chartProgress').value = 0;
-						// }, 2000);
-						log()('done');
+						log(2)('done');
 					}
 				}
 			}
@@ -109,7 +103,7 @@ const dashboard = {
 
 			dashboard.chart.update();
 
-			setTimeout(dashboard.fitCharts, 1000);
+			dashboard.fitCharts();
 		});
 
 		socketClient.on('oldLogData', function(data){
@@ -122,7 +116,7 @@ const dashboard = {
 
 			dashboard.oldChart.update();
 
-			setTimeout(dashboard.fitCharts, 1000);
+			dashboard.fitCharts();
 		});
 
 		socketClient.on('logUpdate', function(data){
@@ -160,20 +154,9 @@ const dashboard = {
 		var width = Math.max(dashboard.chart.data.labels.length * 15, maxWidth);
 		var oldChartWidth = Math.max(dashboard.oldChart.data.labels.length * 15, maxWidth);
 
-		dom.animation.add('write', () => {
-			chartCanvas.parentElement.style.width = width +'px';
-			chartCanvas.height = '300';
-			chartCanvas.width = width;
+		chartCanvas.parentElement.style.width = width +'px';
 
-			oldChartCanvas.parentElement.style.width = oldChartWidth +'px';
-			oldChartCanvas.height = '300';
-			oldChartCanvas.width = oldChartWidth;
-
-			dom.animation.add('write', () => {
-				dashboard.chart.update();
-				dashboard.oldChart.update();
-			});
-		});
+		oldChartCanvas.parentElement.style.width = oldChartWidth +'px';
 	},
 	applyDatasetPreferences: function(data){
 		data.datasets.forEach((dataset) => {
