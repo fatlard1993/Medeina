@@ -27,7 +27,8 @@
   "dependencies": {
     "dom": "github:fatlard1993/dom#2.x.x",
     "http-server": "github:fatlard1993/http-server#4.x.x",
-    "js-util": "github:fatlard1993/js-util#2.x.x",
+		"js-util": "github:fatlard1993/js-util#2.x.x",
+		"config-manager": "github:fatlard1993/config-manager#2.x.x",
     "log": "github:fatlard1993/log#2.x.x",
     "socket-client": "github:fatlard1993/socket-client#2.x.x",
     "websocket-server": "github:fatlard1993/websocket-server#2.x.x",
