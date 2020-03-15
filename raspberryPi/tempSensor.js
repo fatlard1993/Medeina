@@ -1,7 +1,7 @@
 const util = require('js-util');
 const ds18b20 = require('ds18b20-raspi');
 
-const sensor = require('../server/sensor');
+const sensor = require('./sensor');
 
 class tempSensor extends sensor {
 	constructor(id, average, fake){

@@ -8,7 +8,6 @@ const ds18b20 = require('ds18b20-raspi');
 const tempSensor = require('./tempSensor');
 
 const system = {
-	sensors: [],
 	rootPath: function(){ return path.join(system.opts.rootFolder, ...arguments); },
 	init: function(opts){
 		this.opts = opts;
@@ -31,10 +30,14 @@ const system = {
 
 		this.socketServer.registerEndpoints(this.socketEndpoints);
 
+		this.tempSensor = new tempSensor('28-011432901971', 3, opts.dev);
+
 		ds18b20.list((err, ids) => {
 			if(err) return log.error('error listing ds18b20 devices', err);
 
-			ids.forEach((id) => { this.sensors.push(new tempSensor(id, 3, opts.dev)); });
+			log()(`Found ${ids.length} DS18B20 devices: ${ids}`);
+
+			// ids.forEach((id) => { this.sensors.push(new tempSensor(id, 3, opts.dev)); });
 		});
 
 		this.mainLoop = setInterval(this.mainLoopFunc.bind(this), opts.frequency);
@@ -47,7 +50,17 @@ const system = {
 	updateState: function(){
 		system.state = {};
 
-		system.sensors.forEach((sensor) => { system.state[sensor.id] = sensor.value; });
+		system.tempSensor.read();
+
+		system.state = {
+			temp: system.tempSensor.value
+		};
+
+		// system.sensors.forEach((sensor) => {
+		// 	sensor.read();
+
+		// 	system.state[sensor.id] = sensor.value;
+		// });
 
 		this.socketServer.broadcast('state', this.state);
 
