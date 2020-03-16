@@ -1,9 +1,10 @@
+const log = require('log');
 const util = require('js-util');
 const ds18b20 = require('ds18b20-raspi');
 
 const sensor = require('./sensor');
 
-class tempSensor extends sensor {
+class TempSensor extends sensor {
 	constructor(id, average, fake){
 		super(average);
 
@@ -19,8 +20,12 @@ class tempSensor extends sensor {
 	read(){
 		if(this.fake) return this.registerReading((typeof this.fakeVal !== 'undefined' ? this.fakeVal : util.rand(this.fakeMin, this.fakeMax)));
 
-		return this.registerReading(ds18b20.readF(this.id));
+		var reading = ds18b20.readF(this.id);
+
+		if(reading === null) return this.value;
+
+		return this.registerReading(reading);
 	}
 }
 
-module.exports = tempSensor;
+module.exports = TempSensor;

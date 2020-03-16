@@ -17,7 +17,10 @@ yargs.boolean(['h']);
 yargs.default({
 	v: 1,
 	p: 80,
-	f: 500
+	f: 500,
+	min: 76,
+	max: 86,
+	web: true
 });
 
 yargs.describe({
@@ -51,12 +54,20 @@ const system = require('./system');
 system.init(opts);
 
 process.openStdin().addListener('data', function(data){
-	data = data.toString();
+	data = data.toString().replace(/\n+$/, '');
 
-	if(data === 'stop') system.exit(data);
+	log.info(`STDIN: ${data}`);
+
+	if(data === 'stop') process.exit(130);
+
+	else if(data === 'heat on') system.heatPanel.on();
+	else if(data === 'heat off') system.heatPanel.off();
+
+	else if(data === 'lights on') system.lights.on();
+	else if(data === 'lights off') system.lights.off();
 });
 
-process.on('exit', () => { system.exit(); });
+process.on('exit', system.exit);
 
 process.on('SIGINT', () => {
 	log.warn('Exiting via Ctrl + C');

@@ -5,40 +5,47 @@ const log = require('log');
 const util = require('js-util');
 const ds18b20 = require('ds18b20-raspi');
 
-const tempSensor = require('./tempSensor');
+const TempSensor = require('./tempSensor');
+const Outlet = require('./outlet');
 
 const system = {
 	rootPath: function(){ return path.join(system.opts.rootFolder, ...arguments); },
 	init: function(opts){
 		this.opts = opts;
 
-		if(opts.sensorDump) return this.sensorDump();
+		if(opts.listSensors){
+			return ds18b20.list((err, ids) => {
+				if(err) return log.error('error listing ds18b20 devices', err);
 
-		const fontAwesomePath = 'node_modules/font-awesome/src/fonts';
-		const { app, staticServer } = require('http-server').init(opts.port, opts.rootFolder);
+				log()(`Found ${ids.length} DS18B20 devices: ${ids}`);
 
-		this.socketServer = new (require('websocket-server'))({ server: app.server });
+				// ids.forEach((id) => { this.sensors.push(new TempSensor(id, 3, opts.dev)); });
+			});
+		}
 
-		app.use('/resources', staticServer(this.rootPath('client/resources')));
+		if(opts.web){
+			const fontAwesomePath = 'node_modules/font-awesome/src/fonts';
+			const { app, staticServer } = require('http-server').init(opts.port, opts.rootFolder);
 
-		app.use('/fonts', staticServer(this.rootPath('client/fonts')));
+			this.socketServer = new (require('websocket-server'))({ server: app.server });
 
-		if(fs.existsSync(this.rootPath(fontAwesomePath))) app.use('/fonts', staticServer(this.rootPath(fontAwesomePath)));
-		else if(fs.existsSync(this.rootPath(`../${fontAwesomePath}`))) app.use('/fonts', staticServer(this.rootPath(`../${fontAwesomePath}`)));
+			app.use('/resources', staticServer(this.rootPath('client/resources')));
 
-		app.get('/home', function(req, res, next){ res.sendPage('index'); });
+			app.use('/fonts', staticServer(this.rootPath('client/fonts')));
 
-		this.socketServer.registerEndpoints(this.socketEndpoints);
+			if(fs.existsSync(this.rootPath(fontAwesomePath))) app.use('/fonts', staticServer(this.rootPath(fontAwesomePath)));
+			else if(fs.existsSync(this.rootPath(`../${fontAwesomePath}`))) app.use('/fonts', staticServer(this.rootPath(`../${fontAwesomePath}`)));
 
-		this.tempSensor = new tempSensor('28-011432901971', 3, opts.dev);
+			app.get('/home', function(req, res, next){ res.sendPage('index'); });
 
-		ds18b20.list((err, ids) => {
-			if(err) return log.error('error listing ds18b20 devices', err);
+			this.socketServer.registerEndpoints(this.socketEndpoints);
+		}
 
-			log()(`Found ${ids.length} DS18B20 devices: ${ids}`);
+		this.hotSensor = new TempSensor('28-011432901971', 3, opts.dev);
+		this.coolSensor = new TempSensor('28-0114339cb8c3', 3, opts.dev);
 
-			// ids.forEach((id) => { this.sensors.push(new tempSensor(id, 3, opts.dev)); });
-		});
+		this.lights = new Outlet(11, 'lights');
+		this.heatPanel = new Outlet(12, 'heatPanel');
 
 		this.mainLoop = setInterval(this.mainLoopFunc.bind(this), opts.frequency);
 	},
@@ -46,14 +53,29 @@ const system = {
 		this.updateState();
 
 		log(1)(this.state);
+
+		this.lights[this.time === 'day' ? 'on' : 'off']();
+
+		if(this.state.hot > this.opts.max) this.heatPanel.off();
+
+		else if(this.state.cool < this.opts.min) this.heatPanel.on();
 	},
 	updateState: function(){
 		system.state = {};
 
-		system.tempSensor.read();
+		var now = new Date();
+
+		system.hotSensor.read();
+		system.coolSensor.read();
+
+		if(now.getHours() <= 21 && system.time !== 'day') system.time = 'day';
+		else if(now.getHours() >= 22 && system.time !== 'night') system.time = 'night';
 
 		system.state = {
-			temp: system.tempSensor.value
+			hot: system.hotSensor.value,
+			cool: system.coolSensor.value,
+			lights: system.lights.value ? 'on' : 'off',
+			heatPanel: system.heatPanel.value ? 'on' : 'off'
 		};
 
 		// system.sensors.forEach((sensor) => {
@@ -62,7 +84,7 @@ const system = {
 		// 	system.state[sensor.id] = sensor.value;
 		// });
 
-		this.socketServer.broadcast('state', this.state);
+		if(system.opts.web) system.socketServer.broadcast('state', system.state);
 
 		return system.state;
 	},
@@ -81,12 +103,8 @@ const system = {
 			Object.keys(change).forEach((opt) => { system.opts[opt] = change[opt]; });
 		}
 	},
-	exit: function(msg){
-		if(msg){
-			log.error('EXIT', msg);
-
-			return process.exit(130);
-		}
+	exit: function(){
+		log.error('EXIT', arguments);
 
 		clearInterval(system.mainLoop);
 	}
