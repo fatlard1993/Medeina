@@ -101,6 +101,20 @@ const system = {
 			log('Updating options', change);
 
 			Object.keys(change).forEach((opt) => { system.opts[opt] = change[opt]; });
+		},
+		lights: function(state){
+			if(!{ on: 1, off: 1 }[state]) return log.error(`Unknown state request: ${state}`);
+
+			system.lights[state]();
+
+			this.reply('state', system.updateState());
+		},
+		heat: function(state){
+			if(!{ on: 1, off: 1 }[state]) return log.error(`Unknown state request: ${state}`);
+
+			system.heatPanel[state]();
+
+			this.reply('state', system.updateState());
 		}
 	},
 	exit: function(){

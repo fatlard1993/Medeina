@@ -26,6 +26,15 @@ const controller = {
 
 		dom.mobile.detect();
 
+		var wrapper = dom.getElemById('wrapper');
+
+		this.hotTemp = dom.createElem('div', { appendTo: wrapper });
+		this.coolTemp = dom.createElem('div', { appendTo: wrapper });
+		this.lights = dom.createElem('div', { appendTo: wrapper });
+		this.heat = dom.createElem('div', { appendTo: wrapper });
+		this.lightsOverride = dom.createElem('button', { textContent: 'Lights Override', appendTo: wrapper });
+		this.heatOverride = dom.createElem('button', { textContent: 'Heat Override', appendTo: wrapper });
+
 		socketClient.on('state', (state) => {
 			log()('state', state);
 
@@ -60,12 +69,20 @@ const controller = {
 	onPointerUp: function(evt){
 		log()(evt);
 
-		if(evt.target === this.solenoidOverride){
+		if(evt.target === this.lightsOverride){
 			evt.stop();
 
-			this.state.solenoid = !this.state.solenoid;
+			this.state.lights = !this.state.lights;
 
-			socketClient.reply('solenoid', this.state.solenoid ? 'open' : 'close');
+			socketClient.reply('lights', this.state.lights ? 'on' : 'off');
+		}
+
+		else if(evt.target === this.heatOverride){
+			evt.stop();
+
+			this.state.heat = !this.state.heat;
+
+			socketClient.reply('heat', this.state.heat ? 'on' : 'off');
 		}
 	},
 	onKeyUp: function(evt){
@@ -73,6 +90,14 @@ const controller = {
 	},
 	updateUI: function(){
 		log()('updateUI');
+
+		this.hotTemp.textContent = `Hot: ${this.state.hot}C`;
+		this.coolTemp.textContent = `Cool: ${this.state.cool}C`;
+		this.heat.textContent = `Heat: ${this.state.heatPanel.toUpperCase()}`;
+		this.lights.textContent = `Lights: ${this.state.lights.toUpperCase()}`;
+
+		this.lightsOverride.classList[this.state.lights === 'on' ? 'add' : 'remove']('pressed');
+		this.heatOverride.classList[this.state.heatPanel === 'on' ? 'add' : 'remove']('pressed');
 	}
 };
 
